@@ -4,12 +4,14 @@ import { SingleWorkspace } from './features/single/SingleWorkspace';
 import { getHealth } from './shared/api';
 import type { HealthResponse, BatchItem } from './shared/contracts';
 import BatchWorkspace from './features/batch/BatchWorkspace';
+import ExcelWorkspace from './features/excel/ExcelWorkspace';
 import './app.css';
 
-const HASH_BY_TAB: Record<TabId, string> = { single: '#mot-dia-chi', batch: '#hang-loat' };
+const HASH_BY_TAB: Record<TabId, string> = { single: '#mot-dia-chi', batch: '#hang-loat', excel: '#file-excel' };
 
 function tabFromHash(): TabId {
-  return window.location.hash === HASH_BY_TAB.batch ? 'batch' : 'single';
+  const h = window.location.hash;
+  return h === HASH_BY_TAB.batch ? 'batch' : h === HASH_BY_TAB.excel ? 'excel' : 'single';
 }
 
 export function App() {
@@ -55,6 +57,8 @@ export function App() {
       <main id="noi-dung-chinh" className="app-main" tabIndex={-1}>
         {activeTab === 'single' ? (
           <SingleWorkspace />
+        ) : activeTab === 'excel' ? (
+          <ExcelWorkspace />
         ) : (
           <BatchWorkspace onInspect={handleInspectFromBatch} />
         )}

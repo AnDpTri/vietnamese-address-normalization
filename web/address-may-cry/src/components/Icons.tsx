@@ -7,11 +7,10 @@ interface IconProps extends React.SVGProps<SVGSVGElement> {
 export function IconLogo({ size = 28, ...props }: IconProps) {
   return (
     <svg width={size} height={size} viewBox="0 0 32 32" fill="none" {...props}>
-      <rect width="32" height="32" rx="8" fill="var(--accent)" />
-      {/* Precision boundary lines & untangling path */}
-      <path d="M7 16L16 7L25 16V25H7V16Z" stroke="#ffffff" strokeWidth="2" strokeLinejoin="round" />
-      <circle cx="16" cy="18" r="3.5" fill="#ffffff" />
-      <path d="M16 10.5V13.5M11 25V21M21 25V21" stroke="#ffffff" strokeWidth="1.75" strokeLinecap="round" />
+      {/* Logo nét viền theo màu chữ (kiểu Wallet May Cry), rõ ở cả nền sáng và tối */}
+      <path d="M5 15L16 5L27 15V27H5V15Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />
+      <circle cx="16" cy="18" r="3.5" stroke="currentColor" strokeWidth="2" />
+      <path d="M11 27V23M21 27V23" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
     </svg>
   );
 }

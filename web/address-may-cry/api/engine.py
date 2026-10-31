@@ -83,6 +83,17 @@ class NlpEngineAdapter:
                         self._moi_xa[row["ma_xa"]] = row
                         self._moi_tinh[row["ma_tinh"]] = row["ten_tinh"]
 
+            # Chữ loại của huyện/tỉnh cũ và tỉnh mới (Quận, Thành phố...) để hiển thị địa chỉ sau tiền xử lý.
+            self._loai_huyen, self._loai_tinh_cu, self._loai_tinh_moi = {}, {}, {}
+            for ten_tep, kho, cot_ma, cot_loai in (("cu_huyen.csv", self._loai_huyen, "ma_huyen", "loai_huyen"),
+                                                   ("cu_tinh.csv", self._loai_tinh_cu, "ma_tinh", "loai_tinh"),
+                                                   ("moi_tinh.csv", self._loai_tinh_moi, "ma_tinh", "loai_tinh")):
+                duong_dan = cu_path.parent / ten_tep
+                if duong_dan.exists():
+                    with open(duong_dan, encoding="utf-8-sig") as f:
+                        for row in csv.DictReader(f):
+                            kho[row[cot_ma]] = row[cot_loai]
+
             if cu_path.exists():
                 with open(cu_path, encoding="utf-8") as f:
                     for row in csv.DictReader(f):
@@ -384,6 +395,33 @@ class NlpEngineAdapter:
             },
         }
 
+    THU_TU_TIEN_XU_LY = ("so_nha", "ngo_ngach_hem", "thon_xom", "duong", "xa", "huyen", "tinh")
+
+    def _ten_hanh_chinh(self, cap: str, ma: str, moc: str) -> str:
+        """Tên đầy đủ (kèm chữ loại) của đơn vị theo đúng mốc: cũ (trước 01/07/2025) hoặc mới."""
+        if cap == "xa":
+            r = (self._cu_xa if moc == "cu" else self._moi_xa).get(ma)
+            return f"{r['loai_xa']} {r['ten_xa']}" if r else ""
+        if cap == "huyen":
+            r = self._cu_huyen.get(ma)
+            return f"{self._loai_huyen.get(ma, '')} {r['ten_huyen']}".strip() if r else ""
+        if cap == "tinh":
+            ten, loai = (self._cu_tinh.get(ma), self._loai_tinh_cu.get(ma)) if moc == "cu" else                         (self._moi_tinh.get(ma), self._loai_tinh_moi.get(ma))
+            return f"{loai or ''} {ten}".strip() if ten else ""
+        return ""
+
+    def dia_chi_sau_tien_xu_ly(self, res_dict: Dict[str, Any]) -> str:
+        """Địa chỉ đã làm sạch, CHƯA chuyển đổi: chi tiết (số nhà, ngõ, thôn, đường) như kết quả; xã/huyện/tỉnh theo
+        đúng mốc người dùng viết (cũ hoặc mới), xếp từ nhỏ đến lớn, bỏ phần không thuộc địa chỉ."""
+        phan = {f: res_dict.get(f) for f in ("so_nha", "ngo_ngach_hem", "thon_xom", "duong") if res_dict.get(f)}
+        for dv in res_dict.get("dau_vet") or []:
+            cap, ma = dv.get("truong"), dv.get("ma")
+            if cap in ("xa", "huyen", "tinh") and ma and cap not in phan:
+                ten = self._ten_hanh_chinh(cap, ma, dv.get("moc") or "cu")
+                if ten:
+                    phan[cap] = ten
+        return ", ".join(phan[t] for t in self.THU_TU_TIEN_XU_LY if t in phan)
+
     def normalize(self, address: str) -> Tuple[Dict[str, Any], float, str]:
         """Chuẩn hóa một địa chỉ đơn.
 
@@ -416,6 +454,7 @@ class NlpEngineAdapter:
 
         res_dict["thanh_phan"] = thanh_phan
         res_dict["ket_qua_hai_dong"] = ket_qua_hai_dong
+        res_dict["dia_chi_sau_tien_xu_ly"] = self.dia_chi_sau_tien_xu_ly(res_dict)
 
         # Đánh giá status: 'needs_review' khi có cảnh báo, nhiều xã mới ứng viên (mơ hồ),
         # hoặc có phần chưa phân loại đáng kể, hoặc thiếu mã hành chính.

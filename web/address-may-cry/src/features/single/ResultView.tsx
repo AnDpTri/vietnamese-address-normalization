@@ -36,7 +36,7 @@ function Fields({ fields }: { fields: FieldDef[] }) {
   );
 }
 
-export function ResultView({ response }: { response: NormalizeResponse }) {
+export function ResultView({ response, anDau = false }: { response: NormalizeResponse; anDau?: boolean }) {
   const result = response.result;
   const haiDong = response.ket_qua_hai_dong || result.ket_qua_hai_dong;
   const thanhPhan = response.thanh_phan || result.thanh_phan;
@@ -53,14 +53,16 @@ export function ResultView({ response }: { response: NormalizeResponse }) {
 
   return (
     <div className="result-stack">
-      <div className="result-head">
-        <div className="result-head-main">
-          <h2 className="card-title" id="result-title" tabIndex={-1}>Kết quả</h2>
-          <StatusBadge status={response.status} />
-          <span className="muted-note mono">{response.elapsed_ms}&nbsp;ms</span>
+      {!anDau && (
+        <div className="result-head">
+          <div className="result-head-main">
+            <h2 className="card-title" id="result-title" tabIndex={-1}>Kết quả</h2>
+            <StatusBadge status={response.status} />
+            <span className="muted-note mono">{response.elapsed_ms}&nbsp;ms</span>
+          </div>
+          <ReportWrong key={response.log_id ?? response.input} input={response.input} logId={response.log_id} />
         </div>
-        <ReportWrong key={response.log_id ?? response.input} input={response.input} logId={response.log_id} />
-      </div>
+      )}
 
       {needsReview && (
         <p className="review-note" role="note">

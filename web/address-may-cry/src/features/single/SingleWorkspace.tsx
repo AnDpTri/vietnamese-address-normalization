@@ -4,13 +4,14 @@ import { normalizeAddress } from '../../shared/api';
 import { IconAlertTriangle } from '../../components/Icons';
 import { InputPanel, MAX_CHARS } from './InputPanel';
 import { ResultView } from './ResultView';
+import { PipelineView } from './PipelineView';
 import { SessionHistory, type HistoryItem } from './SessionHistory';
 import './single.css';
 
 const GUIDE = [
   { n: '1', t: 'Nhập địa chỉ', d: 'Gõ hoặc dán địa chỉ, viết tắt hay đảo thứ tự đều được.' },
-  { n: '2', t: 'Xem hai dòng kết quả', d: 'Dòng “Có đối chiếu” cho xã/phường và tỉnh/thành mới. Dòng “Thiếu dữ liệu đối chiếu” cho số nhà, ngõ, thôn, đường.' },
-  { n: '3', t: 'Kiểm tra từng thành phần', d: 'Bảng cho biết chữ nào được nhận là gì, và vì sao.' },
+  { n: '2', t: 'Xem ba dòng kết quả', d: 'Đầu vào, sau tiền xử lý (làm sạch, giữ mốc như người dùng viết) và sau chuyển đổi (đơn vị hành chính mới).' },
+  { n: '3', t: 'Xem chi tiết khi cần', d: 'Bấm “Xem chi tiết” để biết từng chữ được nhận là gì, đổi thế nào và vì sao.' },
 ];
 
 export const SingleWorkspace: React.FC = () => {
@@ -21,6 +22,7 @@ export const SingleWorkspace: React.FC = () => {
   const [response, setResponse] = useState<NormalizeResponse | null>(null);
   const [elapsed, setElapsed] = useState(0);
   const [history, setHistory] = useState<HistoryItem[]>([]);
+  const [chiTiet, setChiTiet] = useState(false);
 
   const abortRef = useRef<AbortController | null>(null);
   const timerRef = useRef<number | null>(null);
@@ -153,7 +155,16 @@ export const SingleWorkspace: React.FC = () => {
             </div>
           )}
 
-          {response && !loading && <ResultView response={response} />}
+          {response && !loading && (
+            <>
+              <PipelineView response={response} />
+              <button type="button" className="btn btn-ghost chi-tiet-toggle" aria-expanded={chiTiet}
+                onClick={() => setChiTiet((v) => !v)}>
+                {chiTiet ? 'Ẩn chi tiết' : 'Xem chi tiết từng thành phần'}
+              </button>
+              {chiTiet && <ResultView response={response} anDau />}
+            </>
+          )}
         </section>
       </div>
     </div>

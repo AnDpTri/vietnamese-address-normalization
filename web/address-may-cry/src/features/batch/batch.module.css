@@ -76,12 +76,12 @@
 .targetTag {
   font-size: 12px;
   font-weight: 700;
-  color: #0a3d37;
-  background-color: #d1ece7;
+  color: var(--b-text);
+  background-color: var(--b-active);
   padding: 4px 10px;
   border-radius: 4px;
   font-variant-numeric: tabular-nums;
-  border: 1px solid #b2dfd8;
+  border: 1px solid var(--b-border);
 }
 
 .leadQuestion {
@@ -304,8 +304,8 @@
   gap: 8px;
   min-height: 44px;
   padding: 0 22px;
-  background-color: #0b4f48;
-  color: #ffffff;
+  background-color: var(--b-accent);
+  color: var(--accent-text, #ffffff);
   border-radius: var(--b-radius-control);
   font-size: 14px;
   font-weight: 600;
@@ -315,7 +315,7 @@
 }
 
 .primaryBtn:hover:not(:disabled) {
-  background-color: #073833;
+  background-color: var(--b-accent-hover);
 }
 
 .secondaryBtn {
@@ -382,7 +382,7 @@
 
 .progressBarFill {
   height: 100%;
-  background-color: #0b4f48;
+  background-color: var(--b-accent);
   transition: width 200ms ease;
 }
 
@@ -674,7 +674,7 @@
 
 .mobileCardOutput {
   font-size: 13px;
-  color: #0b4f48;
+  color: var(--link, var(--b-accent));
   font-weight: 600;
 }
 
@@ -803,12 +803,12 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: #064e46;
+  color: var(--link, var(--b-accent));
 }
 
 @media (prefers-color-scheme: dark) {
   .guidanceTag {
-    color: #5eead4;
+    color: var(--link, var(--b-accent));
   }
 }
 

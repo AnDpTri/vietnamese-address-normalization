@@ -5,6 +5,8 @@ Hỗ trợ đầy đủ:
 - POST /api/v1/normalize
 - POST /api/v1/batch
 - POST /api/v1/feedback (người dùng báo kết quả sai; chỉ ghi khi AMC_LOG=1)
+- POST /api/v1/excel/xem, POST /api/v1/excel/chay, GET /api/v1/excel/tien_do, GET /api/v1/excel/tai
+  (chuẩn hóa một cột trong file .xlsx, chạy nền; xem excel_job.py)
 - CORS preflight OPTIONS
 - Xử lý lỗi JSON nhất quán (400, 404, 413, 503)
 - Phục vụ static build từ web/address-may-cry/dist (SPA fallback an toàn)
@@ -25,7 +27,7 @@ from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
-from urllib.parse import urlparse
+from urllib.parse import parse_qs, unquote, urlparse
 
 # Thiết lập đường dẫn
 API_DIR = Path(__file__).resolve().parent
@@ -39,6 +41,7 @@ if str(API_DIR) not in sys.path:
 
 from engine import NlpEngineAdapter
 import nhat_ky
+import excel_job
 
 # Giới hạn kỹ thuật theo hợp đồng
 MAX_BODY_BYTES = 1024 * 1024  # 1 MB
@@ -62,7 +65,7 @@ class AddressMayCryApiHandler(BaseHTTPRequestHandler):
         # CORS headers (cho phép Vite proxy hoặc direct fetch từ localhost)
         self.send_header("Access-Control-Allow-Origin", "*")
         self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-        self.send_header("Access-Control-Allow-Headers", "Content-Type, Authorization")
+        self.send_header("Access-Control-Allow-Headers", "Content-Type, Authorization, X-File-Name")
         if extra_headers:
             for k, v in extra_headers.items():
                 self.send_header(k, v)
@@ -85,7 +88,7 @@ class AddressMayCryApiHandler(BaseHTTPRequestHandler):
         self.send_response(HTTPStatus.NO_CONTENT)
         self.send_header("Access-Control-Allow-Origin", "*")
         self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-        self.send_header("Access-Control-Allow-Headers", "Content-Type, Authorization")
+        self.send_header("Access-Control-Allow-Headers", "Content-Type, Authorization, X-File-Name")
         self.send_header("Access-Control-Max-Age", "86400")
         self.end_headers()
 
@@ -96,6 +99,11 @@ class AddressMayCryApiHandler(BaseHTTPRequestHandler):
         # 1. Endpoint /api/v1/health
         if path == "/api/v1/health":
             self._handle_health()
+            return
+
+        # Tiến độ và tải kết quả chuẩn hóa file Excel
+        if path in ("/api/v1/excel/tien_do", "/api/v1/excel/tai"):
+            self._handle_excel_get(path, parse_qs(parsed_url.query).get("job", [""])[0])
             return
 
         # 2. Các route /api/* không hợp lệ -> 404 JSON
@@ -116,6 +124,10 @@ class AddressMayCryApiHandler(BaseHTTPRequestHandler):
             self._handle_batch()
         elif path == "/api/v1/feedback":
             self._handle_feedback()
+        elif path == "/api/v1/excel/xem":
+            self._handle_excel_xem()
+        elif path == "/api/v1/excel/chay":
+            self._handle_excel_chay()
         elif path.startswith("/api/"):
             self._send_error_json("NOT_FOUND", "Endpoint API không tồn tại.", HTTPStatus.NOT_FOUND)
         else:
@@ -144,6 +156,69 @@ class AddressMayCryApiHandler(BaseHTTPRequestHandler):
             return data, None
         except Exception:
             return None, "INVALID_JSON"
+
+    def _handle_excel_xem(self) -> None:
+        """Nhận file .xlsx (body nhị phân, tên file ở header X-File-Name), trả sheet, tiêu đề, dòng mẫu."""
+        try:
+            n = int(self.headers.get("Content-Length") or 0)
+        except ValueError:
+            n = -1
+        if n <= 0:
+            self._send_error_json("EMPTY_FILE", "Chưa có file.", HTTPStatus.BAD_REQUEST)
+            return
+        if n > excel_job.MAX_FILE_BYTES:
+            self._send_error_json("PAYLOAD_TOO_LARGE", "File vượt quá 10 MB.", HTTPStatus.REQUEST_ENTITY_TOO_LARGE)
+            return
+        du_lieu = self.rfile.read(n)
+        try:
+            self._send_json(excel_job.xem(du_lieu, unquote(self.headers.get("X-File-Name") or "dia_chi.xlsx")))
+        except ValueError as e:
+            self._send_error_json("INVALID_FILE", str(e), HTTPStatus.BAD_REQUEST)
+
+    def _handle_excel_chay(self) -> None:
+        eng = NlpEngineAdapter.get_instance()
+        if not eng.is_ready():
+            self._send_error_json("SERVICE_UNAVAILABLE", "Hệ thống chuẩn hóa địa chỉ chưa sẵn sàng.", HTTPStatus.SERVICE_UNAVAILABLE)
+            return
+        body, err = self._read_body_json()
+        if err or not isinstance(body, dict) or not isinstance(body.get("cot"), int):
+            self._send_error_json("INVALID_INPUT", "Cần file_id, sheet và cot (số thứ tự cột).", HTTPStatus.BAD_REQUEST)
+            return
+
+        def chuan_hoa(dia_chi: str) -> Dict[str, Any]:
+            res, _, _ = eng.normalize(dia_chi[:MAX_ADDRESS_CHARS])
+            res.pop("_chan_doan", None)
+            return res
+
+        def ghi_log(dia_chi: str, res: Dict[str, Any]) -> None:
+            nhat_ky.ghi("chuan_hoa", {"nguon": "excel", "input": dia_chi, "engine": eng.engine_name, "result": res})
+
+        try:
+            job_id = excel_job.chay(str(body.get("file_id", "")), str(body.get("sheet", "")), body["cot"], chuan_hoa, ghi_log)
+            self._send_json({"job_id": job_id})
+        except ValueError as e:
+            self._send_error_json("INVALID_INPUT", str(e), HTTPStatus.BAD_REQUEST)
+
+    def _handle_excel_get(self, path: str, job_id: str) -> None:
+        if path.endswith("tien_do"):
+            td = excel_job.tien_do(job_id)
+            if td is None:
+                self._send_error_json("NOT_FOUND", "Không tìm thấy lượt xử lý (có thể đã hết hạn).", HTTPStatus.NOT_FOUND)
+            else:
+                self._send_json(td)
+            return
+        kq = excel_job.tai(job_id)
+        if kq is None:
+            self._send_error_json("NOT_FOUND", "Kết quả chưa sẵn sàng hoặc đã hết hạn.", HTTPStatus.NOT_FOUND)
+            return
+        from urllib.parse import quote
+        self._set_headers(
+            status_code=HTTPStatus.OK,
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            extra_headers={"Content-Length": str(len(kq["du_lieu"])),
+                           "Content-Disposition": f"attachment; filename*=UTF-8''{quote(kq['ten'])}"},
+        )
+        self.wfile.write(kq["du_lieu"])
 
     def _handle_health(self) -> None:
         eng = NlpEngineAdapter.get_instance()

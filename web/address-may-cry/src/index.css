@@ -7,54 +7,51 @@
 :root {
   color-scheme: light dark;
 
-  /* Nền & bề mặt */
-  --ground: #f4f6f5;
+  /* Bảng màu theo Wallet May Cry (nền, bề mặt, chữ, nút trung tính, nhấn xanh dương) */
+  --ground: #f2f4f7;
   --surface: #ffffff;
-  --raised: #f8faf9;
-  --active: #e6ece9;
-  --border: #d5ddd9;
-  --border-strong: #b4c0bb;
+  --raised: #f7f8fa;
+  --active: #e9ecf0;
+  --border: #e3e6eb;
+  --border-strong: #cfd4db;
   --control: #ffffff;
 
-  /* Chữ */
-  --text: #12201c;
-  --muted: #475550;
-  --faint: #66736e;
+  --text: #0f1114;
+  --muted: #5a6270;
+  --faint: #656d7a;
 
-  /* Nhấn */
-  --accent: #0b5f55;
-  --accent-hover: #084a42;
-  --accent-light: #e1f1ee;
+  --accent: #16191d;
+  --accent-hover: #2d3239;
+  --accent-light: #e6eefa;
   --accent-text: #ffffff;
+  --link: #1d5fbf;
 
-  /* Trạng thái */
-  --positive: #17703a;
-  --negative: #b42318;
-  --warning: #8a4b06;
-  --pill-positive-bg: #dff3e6;
-  --pill-positive-ink: #0f4d28;
-  --pill-negative-bg: #fde8e5;
-  --pill-negative-ink: #8a1c13;
-  --pill-warning-bg: #fdf0d2;
-  --pill-warning-ink: #6b3a03;
-  --pill-neutral-bg: #e8eeeb;
-  --pill-neutral-ink: #2e3a36;
+  --positive: #1e6f46;
+  --negative: #c4242a;
+  --warning: #92400e;
+  --pill-positive-bg: #dcfae5;
+  --pill-positive-ink: #154f27;
+  --pill-negative-bg: #ffedea;
+  --pill-negative-ink: #6a2e1f;
+  --pill-warning-bg: #fffbeb;
+  --pill-warning-ink: #92400e;
+  --pill-neutral-bg: #eceff3;
+  --pill-neutral-ink: #0f1114;
 
-  /* Màu theo loại thành phần địa chỉ (nền / chữ / viền) */
-  --k-so_nha-bg: #e1e9ff;   --k-so_nha-ink: #1e3a9a;   --k-so_nha-line: #9db5f2;
-  --k-ngo_ngach_hem-bg: #ede4ff; --k-ngo_ngach_hem-ink: #55209f; --k-ngo_ngach_hem-line: #bea3ee;
-  --k-thon_xom-bg: #fbebc6; --k-thon_xom-ink: #7a3a05; --k-thon_xom-line: #e2bd68;
-  --k-duong-bg: #d9f2e4;    --k-duong-ink: #0f5a3a;    --k-duong-line: #84cfa7;
-  --k-xa-bg: #e2e3ff;       --k-xa-ink: #3532a0;       --k-xa-line: #a6a8ec;
-  --k-huyen-bg: #e5e9ee;    --k-huyen-ink: #34404f;    --k-huyen-line: #aeb8c5;
-  --k-tinh-bg: #d8edf9;     --k-tinh-ink: #064f78;     --k-tinh-line: #86c3e6;
-  --k-bo_qua-bg: transparent; --k-bo_qua-ink: #5b6864; --k-bo_qua-line: #b4c0bb;
+  --k-so_nha-bg: #ddf0fe; --k-so_nha-ink: #00476d; --k-so_nha-line: #cfd4db;
+  --k-ngo_ngach_hem-bg: #f6e7f9; --k-ngo_ngach_hem-ink: #573160; --k-ngo_ngach_hem-line: #cfd4db;
+  --k-thon_xom-bg: #f9ead9; --k-thon_xom-ink: #603800; --k-thon_xom-line: #cfd4db;
+  --k-duong-bg: #e0f3e3; --k-duong-ink: #154f27; --k-duong-line: #cfd4db;
+  --k-xa-bg: #d8f3f3; --k-xa-ink: #005051; --k-xa-line: #cfd4db;
+  --k-huyen-bg: #edefda; --k-huyen-ink: #464600; --k-huyen-line: #cfd4db;
+  --k-tinh-bg: #ffe6ea; --k-tinh-ink: #682b3c; --k-tinh-line: #cfd4db;
+  --k-bo_qua-bg: transparent; --k-bo_qua-ink: #656d7a; --k-bo_qua-line: #cfd4db;
 
   /* Chữ & hình khối */
-  --font: "Be Vietnam Pro", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  --radius-card: 14px;
-  --radius-control: 10px;
+  --font: "Geist", system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --radius-card: 8px;
+  --radius-control: 6px;
   --radius-small: 6px;
   --gap: 16px;
   --space-1: 4px;
@@ -71,57 +68,105 @@
   --fs-lg: 1.25rem;
   --fs-xl: clamp(1.5rem, 1.1rem + 1.6vw, 2.125rem);
 
-  --shadow-card: 0 1px 2px rgba(16, 32, 28, 0.06), 0 1px 1px rgba(16, 32, 28, 0.04);
+  --shadow-card: none;
 
   --ease-standard: cubic-bezier(0.2, 0, 0, 1);
   --duration-fast: 140ms;
   --duration-normal: 220ms;
   --header-h: 64px;
+  --sidebar-w: 248px;
 }
 
+/* Nền tối: theo hệ thống khi người dùng chưa chọn; nút sáng/tối đặt data-theme trên <html>. */
 @media (prefers-color-scheme: dark) {
-  :root {
-    --ground: #0d1311;
-    --surface: #151c1a;
-    --raised: #1b2421;
-    --active: #26312e;
-    --border: #2a3532;
-    --border-strong: #41504b;
-    --control: #101715;
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --ground: #0e0f11;
+    --surface: #16171a;
+    --raised: #1c1d21;
+    --active: #26282d;
+    --border: #26282d;
+    --border-strong: #3a3d44;
+    --control: #16171a;
 
-    --text: #eef3f1;
-    --muted: #b3beb9;
-    --faint: #94a19c;
+    --text: #f3f4f6;
+    --muted: #a4a9b3;
+    --faint: #8b909b;
 
-    --accent: #3fb6a6;
-    --accent-hover: #5ccabb;
-    --accent-light: #12332e;
-    --accent-text: #05211d;
+    --accent: #f3f4f6;
+    --accent-hover: #d9dbe0;
+    --accent-light: #1b2840;
+    --accent-text: #0e0f11;
+    --link: #7fb0f5;
 
-    --positive: #5fd08a;
-    --negative: #ff8a80;
-    --warning: #f2b45a;
-    --pill-positive-bg: #14341f;
-    --pill-positive-ink: #9be7b5;
-    --pill-negative-bg: #3b1714;
-    --pill-negative-ink: #ffb4ab;
-    --pill-warning-bg: #3a2a0a;
-    --pill-warning-ink: #fbd38d;
-    --pill-neutral-bg: #232d2a;
-    --pill-neutral-ink: #d3dcd8;
+    --positive: #55c28b;
+    --negative: #f0707a;
+    --warning: #e9b46a;
+    --pill-positive-bg: #14291f;
+    --pill-positive-ink: #ace0b6;
+    --pill-negative-bg: #301a1e;
+    --pill-negative-ink: #ffbfae;
+    --pill-warning-bg: #2f2616;
+    --pill-warning-ink: #e9b46a;
+    --pill-neutral-bg: #22252a;
+    --pill-neutral-ink: #f3f4f6;
 
-    --k-so_nha-bg: #1d2b56;   --k-so_nha-ink: #c3d3ff;   --k-so_nha-line: #3f589c;
-    --k-ngo_ngach_hem-bg: #2f2159; --k-ngo_ngach_hem-ink: #dccfff; --k-ngo_ngach_hem-line: #6347a8;
-    --k-thon_xom-bg: #46330a; --k-thon_xom-ink: #fbd98f; --k-thon_xom-line: #8a6a1d;
-    --k-duong-bg: #123a29;    --k-duong-ink: #a9ebc8;    --k-duong-line: #2f7a57;
-    --k-xa-bg: #29296a;       --k-xa-ink: #cacbff;       --k-xa-line: #5557b3;
-    --k-huyen-bg: #2a3340;    --k-huyen-ink: #cdd6e2;    --k-huyen-line: #526072;
-    --k-tinh-bg: #0f3a52;     --k-tinh-ink: #a9ddf6;     --k-tinh-line: #2d7298;
-    --k-bo_qua-bg: transparent; --k-bo_qua-ink: #98a5a0; --k-bo_qua-line: #41504b;
+    --k-so_nha-bg: #1a3040; --k-so_nha-ink: #a1d9ff; --k-so_nha-line: #3a3d44;
+    --k-ngo_ngach_hem-bg: #37273a; --k-ngo_ngach_hem-ink: #e9c1f2; --k-ngo_ngach_hem-line: #3a3d44;
+    --k-thon_xom-bg: #3b2a17; --k-thon_xom-ink: #f3c898; --k-thon_xom-line: #3a3d44;
+    --k-duong-bg: #1f3423; --k-duong-ink: #ace0b6; --k-duong-line: #3a3d44;
+    --k-xa-bg: #113434; --k-xa-ink: #90e2e1; --k-xa-line: #3a3d44;
+    --k-huyen-bg: #2f3017; --k-huyen-ink: #d4d699; --k-huyen-line: #3a3d44;
+    --k-tinh-bg: #3f252b; --k-tinh-ink: #ffbcca; --k-tinh-line: #3a3d44;
+    --k-bo_qua-bg: transparent; --k-bo_qua-ink: #8b909b; --k-bo_qua-line: #3a3d44;
 
     --shadow-card: none;
   }
 }
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --ground: #0e0f11;
+  --surface: #16171a;
+  --raised: #1c1d21;
+  --active: #26282d;
+  --border: #26282d;
+  --border-strong: #3a3d44;
+  --control: #16171a;
+
+  --text: #f3f4f6;
+  --muted: #a4a9b3;
+  --faint: #8b909b;
+
+  --accent: #f3f4f6;
+  --accent-hover: #d9dbe0;
+  --accent-light: #1b2840;
+  --accent-text: #0e0f11;
+  --link: #7fb0f5;
+
+  --positive: #55c28b;
+  --negative: #f0707a;
+  --warning: #e9b46a;
+  --pill-positive-bg: #14291f;
+  --pill-positive-ink: #ace0b6;
+  --pill-negative-bg: #301a1e;
+  --pill-negative-ink: #ffbfae;
+  --pill-warning-bg: #2f2616;
+  --pill-warning-ink: #e9b46a;
+  --pill-neutral-bg: #22252a;
+  --pill-neutral-ink: #f3f4f6;
+
+  --k-so_nha-bg: #1a3040; --k-so_nha-ink: #a1d9ff; --k-so_nha-line: #3a3d44;
+  --k-ngo_ngach_hem-bg: #37273a; --k-ngo_ngach_hem-ink: #e9c1f2; --k-ngo_ngach_hem-line: #3a3d44;
+  --k-thon_xom-bg: #3b2a17; --k-thon_xom-ink: #f3c898; --k-thon_xom-line: #3a3d44;
+  --k-duong-bg: #1f3423; --k-duong-ink: #ace0b6; --k-duong-line: #3a3d44;
+  --k-xa-bg: #113434; --k-xa-ink: #90e2e1; --k-xa-line: #3a3d44;
+  --k-huyen-bg: #2f3017; --k-huyen-ink: #d4d699; --k-huyen-line: #3a3d44;
+  --k-tinh-bg: #3f252b; --k-tinh-ink: #ffbcca; --k-tinh-line: #3a3d44;
+  --k-bo_qua-bg: transparent; --k-bo_qua-ink: #8b909b; --k-bo_qua-line: #3a3d44;
+
+  --shadow-card: none;
+}
+:root[data-theme="light"] { color-scheme: light; }
 
 *, *::before, *::after { box-sizing: border-box; }
 * { margin: 0; padding: 0; }
@@ -149,7 +194,7 @@ body {
   text-rendering: optimizeLegibility;
 }
 
-h1, h2, h3 { text-wrap: balance; line-height: 1.25; }
+h1, h2, h3 { text-wrap: balance; line-height: 1.25; font-weight: 500; }
 p { text-wrap: pretty; }
 a { color: var(--accent); text-underline-offset: 3px; }
 a:hover { color: var(--accent-hover); }

@@ -1,72 +1,83 @@
-.site-header {
+/* Thanh bên theo Wallet May Cry: nền như trang, mục đang mở là nền xám nhạt, không gạch chân. */
+.sidebar {
   position: sticky;
   top: 0;
+  height: 100vh;
+  width: var(--sidebar-w);
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 24px 16px max(20px, env(safe-area-inset-bottom));
+  background: var(--ground);
+  border-right: 1px solid var(--border);
   z-index: 50;
-  background: var(--surface);
-  border-bottom: 1px solid var(--border);
-  padding-top: env(safe-area-inset-top);
 }
-.site-header-inner {
-  max-width: 1320px;
-  margin: 0 auto;
-  min-height: var(--header-h);
-  padding: 8px max(16px, env(safe-area-inset-right)) 8px max(16px, env(safe-area-inset-left));
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  align-items: center;
-  gap: 8px 20px;
-}
-.brand { display: flex; align-items: center; gap: 12px; text-decoration: none; color: var(--text); min-height: 44px; border-radius: var(--radius-control); }
+.brand { display: flex; align-items: center; gap: 12px; padding: 0 10px; text-decoration: none; color: var(--text); min-height: 44px; border-radius: var(--radius-control); }
 .brand:hover { color: var(--text); }
-.brand-text { display: grid; line-height: 1.2; }
-.brand-name { font-weight: 700; font-size: var(--fs-md); letter-spacing: -0.01em; }
+.brand-text { display: grid; line-height: 1.25; min-width: 0; }
+.brand-name { font-weight: 500; font-size: var(--fs-md); letter-spacing: -0.01em; }
 .brand-sub { font-size: var(--fs-xs); color: var(--muted); }
 
-.main-nav { display: flex; gap: 4px; justify-self: start; }
+.main-nav { display: flex; flex-direction: column; gap: 2px; }
 .main-nav a {
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  min-height: 44px;
-  padding: 0 16px;
+  gap: 12px;
+  min-height: 40px;
+  padding: 0 12px;
   border-radius: var(--radius-control);
-  font-weight: 600;
+  font-weight: 400;
   font-size: var(--fs-base);
   color: var(--muted);
   text-decoration: none;
-  border-bottom: 3px solid transparent;
-  border-radius: var(--radius-control) var(--radius-control) 0 0;
   transition: color var(--duration-fast) var(--ease-standard), background-color var(--duration-fast) var(--ease-standard);
 }
 .main-nav a:hover { color: var(--text); background: var(--active); }
-.main-nav a[aria-current="page"] { color: var(--accent); border-bottom-color: var(--accent); }
+.main-nav a[aria-current="page"] { color: var(--text); background: var(--active); font-weight: 500; }
 
-.health {
-  display: inline-flex;
+.sidebar-foot { margin-top: auto; display: flex; flex-direction: column; gap: 6px; }
+.health, .theme-toggle {
+  display: flex;
   align-items: center;
-  gap: 8px;
-  min-height: 44px;
-  padding: 0 14px;
-  border: 1px solid var(--border);
-  border-radius: 999px;
+  gap: 10px;
+  min-height: 40px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: var(--radius-control);
+  font: inherit;
   font-size: var(--fs-sm);
   color: var(--muted);
-  background: var(--raised);
-  transition: background-color var(--duration-fast) var(--ease-standard);
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  transition: background-color var(--duration-fast) var(--ease-standard), color var(--duration-fast) var(--ease-standard);
 }
-.health:hover { background: var(--active); color: var(--text); }
-.health-dot { width: 9px; height: 9px; border-radius: 50%; flex: none; }
+.health:hover, .theme-toggle:hover { background: var(--active); color: var(--text); }
+.health-dot { width: 9px; height: 9px; border-radius: 50%; flex: none; margin: 0 4px; }
 .health-dot.is-ok { background: var(--positive); }
 .health-dot.is-wait { background: var(--faint); }
 .health-dot.is-bad { background: var(--negative); }
 
-@media (max-width: 767px) {
-  .site-header-inner { grid-template-columns: 1fr auto; }
+/* Màn hình hẹp: thanh bên thành thanh trên cùng, điều hướng nằm ngang. */
+@media (max-width: 899px) {
+  .sidebar {
+    position: sticky;
+    height: auto;
+    width: 100%;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 12px;
+    padding: 10px 16px;
+    border-right: 0;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+  }
+  .brand { padding: 0; }
   .brand-sub { display: none; }
-  .main-nav { grid-column: 1 / -1; grid-row: 2; width: 100%; }
-  .main-nav a { flex: 1; justify-content: center; }
-  .health-text { max-width: 9.5rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-}
-@media (max-width: 400px) {
-  .health { padding: 0 10px; }
-  .health-text { display: none; }
+  .main-nav { flex-direction: row; order: 3; width: 100%; }
+  .main-nav a { flex: 1; justify-content: center; gap: 8px; padding: 0 8px; }
+  .sidebar-foot { margin: 0 0 0 auto; flex-direction: row; }
+  .health-text, .theme-toggle span { display: none; }
 }

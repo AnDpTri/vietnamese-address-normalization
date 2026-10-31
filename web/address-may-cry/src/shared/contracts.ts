@@ -53,6 +53,7 @@ export interface AddressResult {
   tinh: string;
   ma_tinh: string;
   dia_chi_chuan: string;
+  dia_chi_sau_tien_xu_ly?: string;
   canh_bao: string[];
   xa_moi_ung_vien: Record<string, string>[];
   dau_vet: Record<string, unknown>[];

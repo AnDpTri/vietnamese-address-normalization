@@ -5,7 +5,7 @@
   padding: var(--space-5) max(16px, env(safe-area-inset-right)) var(--space-6) max(16px, env(safe-area-inset-left));
 }
 .page-intro { margin-bottom: var(--space-5); max-width: 46rem; }
-.page-intro h1 { font-size: var(--fs-xl); font-weight: 700; letter-spacing: -0.02em; margin-bottom: var(--space-2); }
+.page-intro h1 { font-size: var(--fs-xl); font-weight: 500; letter-spacing: -0.02em; margin-bottom: var(--space-2); }
 .page-intro p { color: var(--muted); font-size: var(--fs-md); }
 
 .single-grid { display: grid; gap: var(--space-4); align-items: start; grid-template-columns: minmax(0, 1fr); }
@@ -130,3 +130,24 @@ kbd { font-family: var(--font-mono); font-size: 0.85em; padding: 1px 6px; border
   .empty-state { padding: var(--space-4); }
 }
 #result-title { scroll-margin-top: calc(var(--header-h) + 72px); outline: none; }
+
+/* Ba dòng: đầu vào -> sau tiền xử lý -> sau chuyển đổi */
+.pipeline { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.pipeline-row {
+  display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: center;
+  padding: 14px 16px; border: 1px solid var(--border); border-radius: var(--radius-card); background: var(--surface);
+}
+.pipeline-row.is-new { border-color: var(--link); background: var(--accent-light); }
+.pipeline-step {
+  width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center;
+  background: var(--active); color: var(--muted); font-weight: 700; font-size: var(--fs-sm);
+}
+.pipeline-row.is-new .pipeline-step { background: var(--link); color: var(--surface); }
+.pipeline-text { min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.pipeline-label { font-size: var(--fs-sm); font-weight: 600; color: var(--muted); display: flex; gap: 8px; flex-wrap: wrap; align-items: baseline; }
+.pipeline-label small { font-weight: 400; color: var(--faint); font-size: var(--fs-xs); }
+.pipeline-value { margin: 0; font-size: var(--fs-md); color: var(--text); overflow-wrap: anywhere; }
+.pipeline-row.is-input .pipeline-value { font-family: var(--font-mono); font-size: var(--fs-base); }
+.pipeline-row.is-new .pipeline-value { font-weight: 600; }
+.pipeline-value.is-empty { color: var(--faint); font-style: italic; }
+.chi-tiet-toggle { align-self: flex-start; margin-top: 4px; }
