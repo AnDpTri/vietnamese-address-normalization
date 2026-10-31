@@ -1,6 +1,6 @@
 """Định dạng giá trị từ span; không chạy model, không tra mã hành chính."""
 import re
-from .quy_tac import CHI_TIET, khop_tien_to, bo_dau
+from .quy_tac import CHI_TIET, SO_CO_DAU, khop_tien_to, bo_dau
 from .tach_phan_con import viet_ten
 
 def tien_to_hien_thi(tokens, field):
@@ -140,6 +140,9 @@ def dinh_dang_span(tokens, field, tien_to_mac_dinh=True, tien_to_so_nha=None, ti
         if not tien_to_so_nha and not marker:
             return value, False
     else:
+        if field == 'thon_xom' and label and len(body) == 1 and body[0].casefold() in SO_CO_DAU:
+            # Xóm năm -> Xóm 5. Chỉ khi viết đủ dấu: "Xóm Nam" (không dấu) có thể là tên riêng (xóm phía nam).
+            body = [SO_CO_DAU[body[0].casefold()]]
         value = viet_ten(body)
         if field == 'duong' and label in ('Quốc lộ', 'Tỉnh lộ', 'ĐT', 'HL', 'ĐH'):
             value = ' '.join(t.upper() if re.fullmatch(r'\d+[A-Za-z]{1,2}', t) else t for t in value.split())

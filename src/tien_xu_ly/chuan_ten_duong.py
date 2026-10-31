@@ -11,7 +11,7 @@ import unicodedata
 from collections import defaultdict
 from pathlib import Path
 
-from .quy_tac import CHI_TIET, khop_tien_to
+from .quy_tac import CHI_TIET, SO_CO_DAU, khop_tien_to
 from .tien_xu_ly import bo_dau, go_telex, token_co_vi_tri
 
 
@@ -50,10 +50,6 @@ SO_CHU = {
     'chin': ('chin', 'c', '9'),
     'muoi': ('muoi', 'm', '10'),
 }
-
-
-SO_CO_DAU = {'một': '1', 'hai': '2', 'ba': '3', 'bốn': '4', 'tư': '4', 'năm': '5', 'sáu': '6', 'bảy': '7',
-             'bẩy': '7', 'tám': '8', 'chín': '9', 'mười': '10'}
 
 
 def khoa_so(words):

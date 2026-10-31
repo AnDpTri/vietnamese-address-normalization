@@ -40,7 +40,9 @@ def token_co_vi_tri(chuoi: str) -> list[Token]:
                 if len(chu) >= 2 and any(c.islower() for c in chu) and chu.casefold() not in HAU_TO_SO_NHA:
                     cuts.append(i)
         # P7, Q10, ngõ5: tách tiền tố và số, giữ nguyên offset và số nhà 18B.
-        glued = re.fullmatch(r"(p|q|h|x|ngõ|ngách|hẻm|kiệt|ngo|ngach|hem|kiet|ng)(\d+[A-Za-z]?(?:/\d+[A-Za-z]?)*)", unicodedata.normalize("NFC", raw), re.I)
+        glued = re.fullmatch(r"(p|q|h|x|f|phg|phường|phuong|quận|quan|xã|xa|xóm|xom|thôn|thon|ấp|ap|tổ|to|kp|tt|tx"
+                             r"|ngõ|ngách|hẻm|kiệt|ngo|ngach|hem|kiet|ng)(\d+[A-Za-z]?(?:/\d+[A-Za-z]?)*)",
+                             unicodedata.normalize("NFC", raw), re.I)
         if glued:
             cuts.append(re.search(r"\d", raw).start())
         cuts = sorted(set(cuts + [len(raw)]))

@@ -159,6 +159,24 @@ def _tinh_cua_duong_di(duong_di, dm):
     return set() if provinces is None else provinces
 
 
+SO_BANG_CHU = {'mot': '1', 'hai': '2', 'ba': '3', 'bon': '4', 'tu': '4', 'nam': '5', 'lam': '5', 'sau': '6',
+               'bay': '7', 'tam': '8', 'chin': '9', 'muoi': '10'}
+LOAI_DUNG_TRUOC_SO = {'phuong', 'p', 'phg', 'f', 'quan', 'q', 'xom', 'x', 'thon', 'ap', 'to', 'khu', 'kp', 'ban'}
+
+
+def doc_lai_token(tokens):
+    """Cách đọc khác của từng token, giữ nguyên vị trí: gỡ telex; số bằng chữ đứng ngay sau chữ loại thành chữ số."""
+    out = [go_telex(t) for t in tokens]
+    for i in range(1, len(tokens)):
+        j = i - 1
+        while j > 0 and tokens[j] == '.':  # Q.ba: bỏ qua dấu chấm viết tắt
+            j -= 1
+        truoc = bo_dau(tokens[j].casefold())
+        if truoc in LOAI_DUNG_TRUOC_SO and bo_dau(tokens[i].casefold()) in SO_BANG_CHU:
+            out[i] = SO_BANG_CHU[bo_dau(tokens[i].casefold())]
+    return out
+
+
 BAC = {'xa': 1, 'huyen': 2, 'tinh': 3}  # chi tiết (số nhà, ngõ, đường, thôn) là bậc 0
 
 
@@ -269,9 +287,10 @@ class BoLamSach:
         dm = self.danh_muc
         bao_ve = self.bo_tach is None or self.bo_tach.bao_ve_chi_tiet
         candidates = sinh_ung_vien(tokens, self.trie, bao_ve_chi_tiet=bao_ve)
-        # Gỡ phím telex còn sót từng token (vị trí giữ nguyên) rồi tra thêm: "tinh nam ddinh" -> Nam Định, kể cả khi
-        # mô hình không đánh dấu đoạn đó là hành chính. Ứng viên thêm được tính là khớp không dấu.
-        tokens_telex = [go_telex(t) for t in tokens]
+        # Đọc lại từng token (vị trí giữ nguyên) rồi tra thêm, kể cả khi mô hình không đánh dấu đoạn đó là hành chính:
+        # gỡ phím telex còn sót ("tinh nam ddinh" -> Nam Định) và số viết bằng chữ ngay sau chữ loại ("phường năm",
+        # "quận ba" -> Phường 5, Quận 3). Ứng viên thêm được tính là khớp không dấu.
+        tokens_telex = doc_lai_token(tokens)
         if tokens_telex != tokens:
             # Trùng chỗ với ứng viên gần đúng (sai chính tả) thì ứng viên gỡ telex thay vào: nó đọc đúng chữ đã gõ.
             co = {(u.bat_dau, u.ket_thuc, u.cay, u.ma): u for u in candidates}

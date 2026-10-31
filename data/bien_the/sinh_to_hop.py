@@ -13,6 +13,9 @@ import sys
 import unicodedata
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+from src.tien_xu_ly.tien_xu_ly import go_telex  # noqa: E402  người đọc hiểu được telex sót (Hoawngf = Hoằng)
+
 SO_CHU = {'1': 'một', '2': 'hai', '3': 'ba', '4': 'bốn', '5': 'năm', '6': 'sáu', '7': 'bảy', '8': 'tám', '9': 'chín'}
 # Phím kề trên bàn phím QWERTY, cho lỗi trượt phím.
 KE = {'a': 'qsz', 'd': 'sfe', 'h': 'gjy', 'i': 'uok', 'k': 'jl', 'l': 'k', 'm': 'n', 'n': 'bm', 'o': 'ip',
@@ -144,11 +147,37 @@ class DanhMucCu:
             ok.add(ma)
         return len(ok)
 
+    def tinh_cua(self, ten):
+        """Mã tỉnh cũ của địa chỉ gốc (tên đầy đủ, đã chỉ ra đúng một xã)."""
+        kx, kh, kt = (khoa(ten[c]) for c in ('xa', 'huyen', 'tinh'))
+        return next(mt for ma, x, mh, h, mt, t in self.xa
+                    if (kx == x or kx in self.alias['xa'].get(ma, ())) and kt == t)
+
+    def loi_con_doc_duoc(self, cap, ten_dung, ten_loi, ma_tinh):
+        """Tên gõ sai chỉ còn đọc được khi nó gần tên đúng hơn hẳn mọi tên khác cùng cấp trong tỉnh
+        ('Hoằng Nộc' cách đều Hoằng Lộc và Hoằng Ngọc thì không còn chỉ ra xã nào)."""
+        a, dung = re.sub(r'[^a-z0-9]', '', khoa(go_telex(ten_loi))), khoa(ten_dung)
+        cot = {'xa': 1, 'huyen': 3, 'tinh': 5}[cap]
+        khac = {r[cot] for r in self.xa if (cap == 'tinh' or r[4] == ma_tinh) and r[cot] != dung}
+        d = khoang_cach(a, dung)
+        return all(khoang_cach(a, k) > d for k in khac)
+
+
+def khoang_cach(a, b):
+    truoc = list(range(len(b) + 1))
+    for i, ca in enumerate(a, 1):
+        sau = [i]
+        for j, cb in enumerate(b, 1):
+            sau.append(min(truoc[j] + 1, sau[j - 1] + 1, truoc[j - 1] + (ca != cb)))
+        truoc = sau
+    return truoc[-1]
+
 
 # Mỗi phép: (tên, phạm vi 'tp' cho từng thành phần hoặc 'cau' cho cả câu, làm mất thông tin xã?)
 def sinh(goc, n, seed, dm):
     rng = random.Random(seed)
     tp_goc = goc['thanh_phan']
+    ma_tinh = dm.tinh_cua({t['cap']: t['ten'] for t in tp_goc if t['cap'] in ('xa', 'huyen', 'tinh')})
     seen, out = set(), []
     thu = 0
     while len(out) < n and thu < n * 50:
@@ -176,14 +205,16 @@ def sinh(goc, n, seed, dm):
             elif hanh_chinh and rng.random() < .12:
                 ten = chu_dau(ten); p.append(f'chu_dau:{cap}'); doc_duoc = False
             else:
-                # Mỗi tên chịu 0-2 lỗi gõ chồng lên nhau; tên vẫn đủ chữ nên không mất thông tin.
+                # Mỗi tên chịu 0-2 lỗi gõ chồng lên nhau; tên còn đọc được nếu vẫn gần tên đúng hơn hẳn tên khác.
                 for _ in range(rng.choices((0, 1, 2), (.35, .45, .2))[0]):
                     ten_loi, ten = rng.choice(LOI_TEN), ten
                     ten = LOI_TEN_HAM[ten_loi](ten, rng)
                     p.append(f'{ten_loi}:{cap}')
+                if hanh_chinh and ten != t['ten'] and not dm.loi_con_doc_duoc(cap, t['ten'], ten, ma_tinh):
+                    doc_duoc = False
             phep += p
             if doc_duoc and hanh_chinh:
-                con_doc_duoc[cap] = t['ten']  # lỗi gõ làm khó hơn nhưng không làm mất thông tin
+                con_doc_duoc[cap] = t['ten']
             tps.append((cap, (loai + ' ' + ten).strip() if loai and not loai.endswith('.') else (loai + ten if loai else ten)))
         # Đủ thông tin khi các tên còn đọc được chỉ ra đúng một xã cũ; chữ cái đầu tính như đã bỏ cấp đó.
         mat_xa = dm.so_xa_khop(con_doc_duoc) != 1

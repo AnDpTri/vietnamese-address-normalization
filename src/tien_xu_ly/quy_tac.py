@@ -16,7 +16,8 @@ HANH_CHINH = [
     ("quan", {"huyen"}, "quan"), ("q", {"huyen"}, "quan"),
     ("tx", {"huyen"}, "thi xa"), ("tt", {"xa"}, "thi tran"),
     ("phuong", {"xa"}, "phuong"), ("phuowng", {"xa"}, "phuong"),
-    ("p", {"xa"}, "phuong"), ("xa", {"xa"}, "xa"), ("x", {"xa"}, "xa"),
+    ("p", {"xa"}, "phuong"), ("phg", {"xa"}, "phuong"), ("f", {"xa"}, "phuong"),  # F5, Q3: lối viết miền Nam
+    ("xa", {"xa"}, "xa"), ("x", {"xa"}, "xa"),
     ("district", {"huyen"}, "quan"), ("ward", {"xa"}, "phuong"),
     ("city", {"tinh", "huyen"}, "thanh pho"), ("province", {"tinh"}, "tinh"),
 ]
@@ -86,6 +87,9 @@ DAU_NGAT_SO_NHA = (',', ';')
 TIEN_TO_THANH_PHO = ('thanh', 'tp')
 TIEN_TO_PHO_HANH_CHINH = ('khu', 'to', 'khoi')
 TIEN_TO_THON_XOM = ('Thôn', 'Ấp', 'Xóm', 'Bản', 'Buôn')
+# Số viết bằng chữ, đủ dấu (Tám khác Tâm): Tháng Tám = Tháng 8, Xóm năm = Xóm 5.
+SO_CO_DAU = {'một': '1', 'hai': '2', 'ba': '3', 'bốn': '4', 'tư': '4', 'năm': '5', 'sáu': '6', 'bảy': '7',
+             'bẩy': '7', 'tám': '8', 'chín': '9', 'mười': '10'}
 DAU_NGAT_CHI_TIET = {',', ';'}
 GIA_TRI_THON_XOM_LOAI_BO = ('khu', 'khu đô thị')
 DO_DAI_MA_BUU_CHINH = (5, 6)
