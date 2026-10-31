@@ -244,6 +244,12 @@ def phuc_hoi_ten_duong(detail, spans, unknown, tokens, ma_tinh, tu_dien_duong,
             if pham_vi:
                 spans = [x for x in spans if x.get('truong') != 'duong']
                 spans.append({'truong': 'duong', 'bat_dau': pham_vi[0], 'ket_thuc': pham_vi[1], 'gia_tri': new_duong})
+        if not name_evidence and duong_spans:
+            # Cuối cùng mới đoán gần đúng, và chỉ trên đoạn mô hình đã gán là đường.
+            doan, ev = tu_dien_duong.chuan_hoa_gan_dung(
+                curr_duong, ma_tinh, tien_to_mac_dinh=tien_to_mac_dinh, tien_to_duong=tien_to_duong)
+            if ev:
+                new_duong, name_evidence = doan, ev
 
     if not new_duong and ma_tinh and detail.get('thon_xom'):
         detail, spans, new_duong, name_evidence = thon_khong_tien_to_la_duong(

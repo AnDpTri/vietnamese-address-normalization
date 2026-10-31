@@ -25,14 +25,14 @@ def fold(s):
     return ''.join(c for c in s if unicodedata.category(c) != 'Mn').casefold().replace(' ', '')
 
 
-def tao_pipe(tu_dien):
+def tao_pipe(tu_dien, m=M):
     from src.danh_muc import DanhMuc
     from src.tien_xu_ly.char_cnn import BoTachCharCNN
     from src.tien_xu_ly.xep_hang import BoXepHang
     from src.tien_xu_ly.chuan_ten_duong import TuDienDuong
     from src.chuan_hoa import BoChuanHoa
-    dm = DanhMuc(); ext = BoTachCharCNN(M / 'char_cnn.pt', threads=1)
-    return BoChuanHoa(danh_muc=dm, bo_tach=ext, bo_xep_hang=BoXepHang(M / 'ranker.txt', ext.ma_bam, dm.ma_bam),
+    dm = DanhMuc(); ext = BoTachCharCNN(m / 'char_cnn.pt', threads=1)
+    return BoChuanHoa(danh_muc=dm, bo_tach=ext, bo_xep_hang=BoXepHang(m / 'ranker.txt', ext.ma_bam, dm.ma_bam),
                       tu_dien_duong=TuDienDuong(tu_dien), bao_ve_duong=True, tien_to_mac_dinh=True)
 
 
@@ -65,9 +65,10 @@ def main():
     ap.add_argument('goc', nargs='+')
     ap.add_argument('--tu-dien', default=str(GOC / 'danh_gia' / 'ket_qua' / 'tu_dien_duong_v5.json'))
     ap.add_argument('--ra')
+    ap.add_argument('--mo-hinh', type=Path, default=M, help='thư mục có char_cnn.pt và ranker.txt')
     ap.add_argument('--in-sai', action='store_true')
     a = ap.parse_args()
-    pipe = tao_pipe(a.tu_dien)
+    pipe = tao_pipe(a.tu_dien, a.mo_hinh)
     d = Path(a.thu_muc)
     tong, ket = defaultdict(int), {}
     for gid in a.goc:

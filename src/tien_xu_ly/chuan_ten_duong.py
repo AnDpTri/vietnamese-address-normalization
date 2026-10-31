@@ -1,12 +1,14 @@
 """Tra tên đường từ train; không phải danh mục đường đã xác minh.
 
 Chỉ bổ sung dấu/mở rộng dạng viết tắt có một kết quả trong tỉnh đã chọn.
-Không sửa dấu đã nhập, không đoán gần đúng và không dùng nhãn dev/test.
+Không sửa dấu đã nhập và không dùng nhãn dev/test. Đoán gần đúng (chuan_hoa_gan_dung) chỉ dùng cho đoạn
+mô hình đã gán là đường, có ngưỡng chặt và luôn kèm cảnh báo là tên đoán.
 """
 
 import hashlib
 import itertools
 import json
+import re
 import unicodedata
 from collections import defaultdict
 from pathlib import Path
@@ -50,6 +52,29 @@ SO_CHU = {
     'chin': ('chin', 'c', '9'),
     'muoi': ('muoi', 'm', '10'),
 }
+
+
+_AM_TIET = re.compile(
+    r'(ngh|ng|nh|ch|gh|gi|kh|ph|qu|th|tr|[bcdghklmnprstvx])?'
+    r'(uye|uya|uyu|ieu|yeu|oai|oay|oao|oeo|uay|uoi|uou|ai|ao|au|ay|eo|eu|ia|ie|iu|oa|oe|oi|oo|ua|ue|ui|uo|uu|uy|ye'
+    r'|[aeiouy])'
+    r'(ch|ng|nh|[cmnpt])?')
+
+
+def am_tiet_hop_le(w):
+    """Âm tiết viết được theo chính tả tiếng Việt (xét dạng không dấu): Linh có, Linnh/Quys/Tabg không."""
+    w = bo_dau(w).casefold()
+    return w.isdigit() or bool(_AM_TIET.fullmatch(w))
+
+
+def khoang_cach(a, b):
+    truoc = list(range(len(b) + 1))
+    for i, ca in enumerate(a, 1):
+        sau = [i]
+        for j, cb in enumerate(b, 1):
+            sau.append(min(truoc[j] + 1, sau[j - 1] + 1, truoc[j - 1] + (ca != cb)))
+        truoc = sau
+    return truoc[-1]
 
 
 def khoa_so(words):
@@ -131,6 +156,7 @@ class TuDienDuong:
         self.index_bare = defaultdict(dict)
         self.index_qg = defaultdict(dict)
         self.index_bare_qg = defaultdict(dict)
+        self._ten_theo_tinh = None  # tỉnh -> khóa tên đầy đủ -> mục, dựng khi cần đoán gần đúng
         dang_theo_khoa = defaultdict(list)
         for item in payload['entries']:
             parsed = tach_ten(item['canonical'])
@@ -198,6 +224,45 @@ class TuDienDuong:
         choices = [c for c in choices if khoa(tach_ten(c['canonical'])[1]) == key]  # không mở rộng viết tắt ngoài tỉnh
         names = {tuple(tach_ten(c['canonical'])[1]) for c in choices}
         return choices if len(names) == 1 else []
+
+    def chuan_hoa_gan_dung(self, value, ma_tinh, tien_to_mac_dinh=True, tien_to_duong=None):
+        """Đoán tên đường gõ sai (Trần Quys Kiên, Đỗ Thị Tặbg) trong các đường của tỉnh: lệch tối đa 1 ký tự với tên
+        6-9 chữ, 2 với tên từ 10 chữ (sau khi gỡ telex), và tên gần nhất phải hơn hẳn tên kế tiếp. Chỉ gọi cho đoạn
+        mô hình đã gán là đường; bằng chứng ghi nguồn 'tu_dien_train_gan_dung' để cảnh báo là tên đoán."""
+        if tien_to_duong is None:
+            tien_to_duong = tien_to_mac_dinh
+        parsed = tach_ten(go_telex(value))
+        if not parsed or not ma_tinh:
+            return value, None
+        kind, words, co_tien_to = parsed
+        k = ''.join(c for c in khoa(words) if c.isalnum())
+        # Tên toàn âm tiết hợp lệ (Lê Thái Tổ, Đông Tác) nhiều khả năng là đường có thật mà từ điển chưa có:
+        # không "sửa" thành tên gần giống. Chỉ đoán khi có âm tiết không thể có trong tiếng Việt (Linnh, Tặbg).
+        if len(k) < 6 or all(am_tiet_hop_le(w) for w in words):
+            return value, None
+        if self._ten_theo_tinh is None:
+            self._ten_theo_tinh = defaultdict(dict)
+            for (tinh, _, _), muc in self.index.items():
+                for item in muc.values():
+                    p = tach_ten(item['canonical'])
+                    if p:
+                        self._ten_theo_tinh[tinh][khoa(p[1])] = (p[0], p[1], item)
+        so = [c for c in k if c.isdigit()]
+        ds = sorted((khoang_cach(k, kk), kk) for kk in self._ten_theo_tinh.get(ma_tinh, {})
+                    if [c for c in kk if c.isdigit()] == so)  # Trang Liệt 1 không thành Trang Liệt 3
+        if not ds:
+            return value, None
+        toi_da = 2 if len(k) >= 10 else 1
+        d, kk = ds[0]
+        if d == 0 or d > toi_da or (len(ds) > 1 and ds[1][0] <= d + 1):
+            return value, None
+        c_kind, c_words, item = self._ten_theo_tinh[ma_tinh][kk]
+        if co_tien_to:
+            c_kind = kind  # giữ loại người dùng đã ghi (Phố Bà Triêuj -> Phố Bà Triệu)
+        new = (c_kind + ' ' if co_tien_to or tien_to_duong else '') + ' '.join(c_words)
+        return new, {'nguon': 'tu_dien_train_gan_dung', 'ma_tinh': ma_tinh, 'khoang_cach': d,
+                     'gia_tri_truoc': value, 'gia_tri_sau': new,
+                     'train_ids': item['train_ids'], 'tu_dien_sha256': self.ma_bam}
 
     def chuan_hoa(self, value, ma_tinh, tien_to_mac_dinh=True, tien_to_duong=None):
         if tien_to_duong is None:

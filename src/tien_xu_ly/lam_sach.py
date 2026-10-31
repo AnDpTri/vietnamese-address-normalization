@@ -379,6 +379,8 @@ class BoLamSach:
         road_warnings = []
         if name_evidence:
             road_warnings.append('ten_duong_tham_chieu_train_chua_xac_minh')
+            if name_evidence.get('nguon') == 'tu_dien_train_gan_dung':
+                road_warnings.append('ten_duong_doan_gan_dung')
         else:
             detail, spans, bo_viet_tat = bo_duong_viet_tat_chua_giai(detail, spans, tokens, chuoi)
             if bo_viet_tat:
