@@ -41,3 +41,8 @@ web/address-may-cry/api/logs/
 
 # Cấu hình cục bộ của Claude Code
 /.claude/
+
+# Báo cáo (Word, PDF, bản nháp): chỉ giữ trên máy, không lên git
+/bao_cao/*
+!/bao_cao/bao_cao_tuan_3.md
+!/bao_cao/bao_cao_tuan_3.docx

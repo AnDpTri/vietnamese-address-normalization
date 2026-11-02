@@ -6,6 +6,7 @@ Nhận địa chỉ nhập tự do (không dấu, viết tắt, sai chính tả,
 
 - **[TONG_KET.md](TONG_KET.md)**: hệ thống hiện tại, số đo, nhật ký các hướng đã thử, lỗi đã biết. Đọc file này trước.
 - [bai_toan.md](bai_toan.md): đặc tả bài toán.
+- [bao_cao/](bao_cao/): báo cáo tiến độ tuần 3, tuần 4 và báo cáo cuối kỳ (Word, PDF).
 
 ## Hệ thống: hai phần
 
@@ -27,6 +28,7 @@ data/
   test/         400 địa chỉ OSM, nhãn sơ bộ, chưa duyệt tay
 danh_gia/       danh_gia/v3/ là bộ train/đo hiện hành; ngoài ra chỉ còn script mà v3 và test gọi (huan_luyen_char, du_lieu_char, chay_ban_thu, do_kiem_tra_test400...)
 web/            Address May Cry (giao diện + API)
+bao_cao/        báo cáo tuần và báo cáo cuối kỳ
 tests/
 rieng/          (không lên git) đáp án kín, bộ khó, thư mục train, mô hình lớn
 luu_tru/        (không lên git) mọi thứ cũ, nguyên vẹn
