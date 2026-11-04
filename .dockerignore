@@ -1,0 +1,12 @@
+.git
+**/__pycache__
+**/*.pyc
+.venv*
+rieng/
+luu_tru/
+bao_cao/
+**/node_modules
+web/address-may-cry/dist
+web/address-may-cry/api/logs
+web/address-may-cry/api/*.log
+web/address-may-cry/api/*.pid

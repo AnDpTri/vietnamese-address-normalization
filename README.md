@@ -50,6 +50,15 @@ $m = 'mo_hinh/thu_nghiem/char_v3_tc'
 
 Web: `web/address-may-cry/` (xem README trong đó). Đặt `AMC_LOG=1` để ghi log các bước trung gian.
 
+Triển khai bằng Docker (image tự build giao diện, API nghe cổng `$PORT`, mặc định 8080, cần khoảng 250 MB RAM):
+
+```bash
+docker build -t address-may-cry .
+docker run -p 8080:8080 address-may-cry
+```
+
+Trên Render: tạo Blueprint từ repo này, Render đọc `render.yaml` và build `Dockerfile`.
+
 ## Đo
 
 ```powershell

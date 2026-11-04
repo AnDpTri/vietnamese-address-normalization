@@ -1,0 +1,10 @@
+# Blueprint Render: build Dockerfile ở gốc repo, chạy gói miễn phí ở Singapore.
+services:
+  - type: web
+    name: address-may-cry
+    runtime: docker
+    plan: free
+    region: singapore
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /api/v1/health
+    autoDeploy: true
