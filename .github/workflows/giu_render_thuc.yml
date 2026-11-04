@@ -1,0 +1,24 @@
+# Gói miễn phí của Render ngủ sau 15 phút không có truy cập.
+# Workflow này gọi /api/v1/health mỗi 10 phút để máy chủ luôn thức.
+# Lưu ý: GitHub có thể chạy lịch trễ vài phút khi tải cao.
+name: Giữ Render thức
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Gọi health
+        run: |
+          for i in 1 2 3; do
+            if curl -fsS -m 90 https://address-may-cry.onrender.com/api/v1/health; then
+              exit 0
+            fi
+            sleep 20
+          done
+          exit 1
