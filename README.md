@@ -61,6 +61,16 @@ Trên Render: tạo Blueprint từ repo này, Render đọc `render.yaml` và bu
 
 ## Đo
 
+**Quy chuẩn đánh giá: [danh_gia/chuan/QUY_CHUAN.md](danh_gia/chuan/QUY_CHUAN.md).** Mọi số báo cáo và quyết định thay đổi dùng bộ này (một quy ước chấm, tách tập thật/sinh, khoảng tin cậy, so cặp McNemar, luật chấp nhận). Cấu hình pipeline dùng chung ở `src/cau_hinh.py`.
+
+```bash
+.venv-neural/Scripts/python.exe -X utf8 -B -m danh_gia.chuan chay <ten>
+.venv-neural/Scripts/python.exe -X utf8 -B -m danh_gia.chuan cham <ten>
+.venv-neural/Scripts/python.exe -X utf8 -B -m danh_gia.chuan so_sanh <ten_dang_dung> <ten_de_xuat>
+```
+
+Script đo cũ (vẫn chạy, không còn là căn cứ quyết định):
+
 ```powershell
 # chạy dev + bộ khó (bộ khó cần rieng/bo_kho)
 & $py -X utf8 -B danh_gia/v3/chay_mo_hinh.py $m/char_cnn.pt $m/ranker.txt rieng/train_v3/ket_<ten>

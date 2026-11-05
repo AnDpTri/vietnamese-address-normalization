@@ -10,8 +10,8 @@ Tuân thủ đầy đủ hợp đồng [`CONTRACT.md`](file:///D:/nlp_chuan_hoa_
 - **Giao thức & Cổng:** HTTP `127.0.0.1:8080`.
 - **Framework:** Chuẩn thư viện Python (`http.server.ThreadingHTTPServer`), không phụ thuộc thêm thư viện ngoài, tối ưu bộ nhớ và CPU.
 - **Engine NLP:**
-  - Mô hình: CharCNN v2 (`char_v2_01/char_cnn.pt`) + LambdaRank v2 (`ranker.txt`) + Từ điển đường v5 (`tu_dien_duong_v5.json`) + Danh mục sạch (`data/clean`).
-  - Chế độ: CPU 1 thread (`torch.set_num_threads(1)`), `bao_ve_duong=True`, `tien_to_mac_dinh=True`.
+  - Mô hình, từ điển đường và tùy chọn lấy từ `src/cau_hinh.py` (dùng chung với CLI và bộ đánh giá chuẩn `danh_gia/chuan`): hiện là `char_v3_tc` (CharCNN + ranker LightGBM) + `data/train/tu_dien_train.json` + danh mục `data/clean`, `bao_ve_duong=True`, `tien_to_mac_dinh=True`.
+  - Chế độ: CPU 1 thread (`torch.set_num_threads(1)`). Đổi từ điển để thử: biến môi trường `AMC_TU_DIEN_DUONG`.
   - Quản lý đồng thời: Singleton model adapter, bảo vệ toàn bộ bước inference bằng `threading.Lock` để tránh xung đột trạng thái / race condition trên PyTorch.
 - **Bảo mật & Quyền riêng tư:**
   - Không log raw địa chỉ ra console theo mặc định.

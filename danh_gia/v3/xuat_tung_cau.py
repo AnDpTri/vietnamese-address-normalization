@@ -5,18 +5,12 @@ from dataclasses import asdict
 from pathlib import Path
 
 import duong_dan as dd  # gốc repo, CODE_ROOT vào sys.path
-from src.danh_muc import DanhMuc  # noqa: E402
-from src.tien_xu_ly.char_cnn import BoTachCharCNN  # noqa: E402
-from src.tien_xu_ly.xep_hang import BoXepHang  # noqa: E402
-from src.tien_xu_ly.chuan_ten_duong import TuDienDuong  # noqa: E402
-from src.chuan_hoa import BoChuanHoa  # noqa: E402
+from src.cau_hinh import tao_bo_chuan_hoa  # noqa: E402  (cấu hình chung với web)
 
 cnn, ranker, out = Path(sys.argv[1]), Path(sys.argv[2]), Path(sys.argv[3])
 test = sys.argv[4] if len(sys.argv) > 4 else dd.TEST
-dm = DanhMuc(); ext = BoTachCharCNN(cnn, threads=1)
-pipe = BoChuanHoa(danh_muc=dm, bo_tach=ext, bo_xep_hang=BoXepHang(ranker, ext.ma_bam, dm.ma_bam),
-                  tu_dien_duong=TuDienDuong(dd.TU_DIEN_TRAIN),
-                  bao_ve_duong=True, tien_to_mac_dinh=False)
+# Chạy trên tập test nên giữ quy ước nhãn test: không tự thêm tiền tố.
+pipe = tao_bo_chuan_hoa(cnn=cnn, ranker=ranker, tien_to_mac_dinh=False)
 co_cd = hasattr(pipe, 'chuan_hoa_chan_doan')
 with open(out, 'w', encoding='utf-8', newline='\n') as f:
     for r in csv.DictReader(open(test, encoding='utf-8-sig')):

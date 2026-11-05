@@ -6,11 +6,7 @@ from pathlib import Path
 
 import os
 import duong_dan as dd  # gốc repo, CODE_ROOT vào sys.path
-from src.tien_xu_ly.char_cnn import BoTachCharCNN
-from src.chuan_hoa import BoChuanHoa
-from src.tien_xu_ly.chuan_ten_duong import TuDienDuong
-from src.danh_muc import DanhMuc
-from src.tien_xu_ly.xep_hang import BoXepHang
+from src.cau_hinh import tao_bo_chuan_hoa  # cấu hình chung với web
 
 INP = dd.DEV
 KHO = dd.BO_KHO
@@ -18,10 +14,7 @@ KHO = dd.BO_KHO
 
 def main(cnn, ranker, out_dir):
     out = Path(out_dir); out.mkdir(parents=True, exist_ok=True)
-    dm = DanhMuc(); ext = BoTachCharCNN(Path(cnn), threads=1)
-    rk = BoXepHang(Path(ranker), ext.ma_bam, dm.ma_bam)
-    pipe = BoChuanHoa(danh_muc=dm, bo_tach=ext, bo_xep_hang=rk, tu_dien_duong=TuDienDuong(dd.TU_DIEN_TRAIN),
-                      bao_ve_duong=True, tien_to_mac_dinh=True)
+    pipe = tao_bo_chuan_hoa(cnn=cnn, ranker=ranker)
     items = []
     for sp in ('dev_goc', 'dev_kho'):
         for r in csv.DictReader(open(INP / f'{sp}.csv', encoding='utf-8-sig')):

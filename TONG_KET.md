@@ -23,6 +23,19 @@ Bài toán chỉ có **hai phần**, đo riêng từng phần:
 
 ## 2. Số đo hiện tại
 
+**Từ 05/11/2026 số chính thức lấy theo [quy chuẩn đánh giá](danh_gia/chuan/QUY_CHUAN.md)** (một quy ước chấm, tách thật/sinh, khoảng tin cậy 95%). Cấu hình web = cấu hình đo (`src/cau_hinh.py`, từ điển `tu_dien_train`):
+
+| Tập | Đủ 6 trường | Khẳng định sai mã xã |
+|---|---|---|
+| dev_that: 400 địa chỉ OSM thật (số chính) | **86,8%** (83,1–89,7) | 12 (3,0%) |
+| dev_sinh: 1.200 địa chỉ sinh từ danh mục | 97,2% | 0 |
+| bộ khó (1.500) | 86,9% | 14 (0,9%) |
+| test400 (nhãn AI chưa duyệt, tham khảo) | 69,8% (quy ước chấm mới) | 37 (9,2%) |
+
+Con số 94,2% dưới đây gộp 736 địa chỉ sinh (đúng 98,1%) với 400 địa chỉ thật (87,0%), không còn dùng làm số chính. Tập vàng 300 địa chỉ ngoài OSM đang chờ người duyệt (`rieng/vang/`).
+
+Số cũ (đo 31/10, bộ chấm cũ):
+
 Đo lại ngày 31/10 trên code đã dọn (`char_v3_tc`, từ điển `tu_dien_train.json`). Kết quả giống hệt từng câu (3.100/3.100) với lượt đo ngay trước khi dọn.
 
 **Đầu cuối** (sau chuyển đổi, 6 trường: số nhà, ngõ, thôn, đường, mã xã, mã tỉnh; so bỏ dấu; nhãn dev đã sửa):
@@ -74,7 +87,7 @@ Bài toán chỉ có **hai phần**, đo riêng từng phần:
 
 ## 4. Lỗi đã biết và việc còn dở
 
-1. **Hai từ điển đường:** web dùng `danh_gia/ket_qua/tu_dien_duong_v5.json`, script đo dùng `data/train/tu_dien_train.json`. Số đo chưa phản ánh đúng web. Cần chốt một bản.
+1. ~~Hai từ điển đường~~ (xong 05/11/2026): web và mọi script đo dùng chung `src/cau_hinh.py`; chọn `tu_dien_train` vì v5 bịa tên đường từ ghi chú (xem QUY_CHUAN.md mục 6).
 2. **Ranh giới thôn/xóm** khi không có dấu phẩy (`xóm 5 xã mỹ hưng huyện…`): bản sửa dở, có kế hoạch sửa trong `luu_tru/tu_repo_20261031` (báo cáo điều phối 31/10).
 3. **Viết tắt bỏ nguyên âm** (`hnoi`, `p.trc bch`): không tra được, đang để trống.
 4. **Tập test 400** chưa duyệt tay, đã bị mở nhiều lần. Cần một tập giữ kín mới có người duyệt.

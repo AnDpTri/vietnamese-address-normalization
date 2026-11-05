@@ -32,6 +32,7 @@ from src.tien_xu_ly.xep_hang import BoXepHang
 from src.tien_xu_ly.chuan_ten_duong import TuDienDuong
 from src.chuan_hoa import BoChuanHoa
 from src.kieu_du_lieu import KetQua
+from src import cau_hinh
 
 PURE_SEPARATORS = set(" \t\r\n,;-–—|~#()[]{}")
 PHONE_RE = re.compile(r"(?:sđt|sdt|đt|dt|tel|phone|hotline|zalo|điện thoại)?[:.\s]*0\d{8,10}\b", re.IGNORECASE)
@@ -127,31 +128,17 @@ class NlpEngineAdapter:
 
     def _load_models(self) -> None:
         try:
-            cnn_path = CODE_ROOT_PATH / "mo_hinh" / "thu_nghiem" / "char_v3_tc" / "char_cnn.pt"
-            ranker_path = CODE_ROOT_PATH / "mo_hinh" / "thu_nghiem" / "char_v3_tc" / "ranker.txt"
-            dict_path = CODE_ROOT_PATH / "danh_gia" / "ket_qua" / "tu_dien_duong_v5.json"
+            # Cùng cấu hình với CLI và script đo (src/cau_hinh.py): mô hình, từ điển đường, tùy chọn.
+            for ten, duong_dan in (("CharCNN", cau_hinh.CNN), ("Ranker", cau_hinh.RANKER),
+                                   ("từ điển đường", cau_hinh.TU_DIEN_DUONG)):
+                if not duong_dan.exists():
+                    raise FileNotFoundError(f"Không tìm thấy {ten}: {duong_dan}")
 
-            if not cnn_path.exists():
-                raise FileNotFoundError(f"Không tìm thấy checkpoint CharCNN: {cnn_path}")
-            if not ranker_path.exists():
-                raise FileNotFoundError(f"Không tìm thấy checkpoint Ranker: {ranker_path}")
-            if not dict_path.exists():
-                raise FileNotFoundError(f"Không tìm thấy từ điển đường v5: {dict_path}")
-
-            # Danh mục mặc định của DanhMuc()
-            self._dm = DanhMuc()
-            self._cnn = BoTachCharCNN(cnn_path, threads=1)
-            self._ranker = BoXepHang(ranker_path, self._cnn.ma_bam, self._dm.ma_bam)
-            self._tdd = TuDienDuong(dict_path)
-
-            self._pipe = BoChuanHoa(
-                self._dm,
-                bo_tach=self._cnn,
-                bo_xep_hang=self._ranker,
-                tu_dien_duong=self._tdd,
-                bao_ve_duong=True,
-                tien_to_mac_dinh=True,
-            )
+            self._pipe = cau_hinh.tao_bo_chuan_hoa(threads=1)
+            self._dm = self._pipe.danh_muc
+            self._cnn = self._pipe.bo_tach
+            self._ranker = self._pipe.bo_xep_hang
+            self._tdd = self._pipe.tu_dien_duong
 
             # Warm-up 1 câu ngắn để khởi tạo bộ nhớ torch
             with self._lock:

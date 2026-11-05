@@ -25,7 +25,7 @@ COPY data/ten_cu/ data/ten_cu/
 COPY data/xa_chia_theo_duong/ data/xa_chia_theo_duong/
 COPY data/duong/ data/duong/
 COPY mo_hinh/thu_nghiem/char_v3_tc/ mo_hinh/thu_nghiem/char_v3_tc/
-COPY danh_gia/ket_qua/tu_dien_duong_v5.json danh_gia/ket_qua/tu_dien_duong_v5.json
+COPY data/train/tu_dien_train.json data/train/tu_dien_train.json
 COPY web/address-may-cry/api/ web/address-may-cry/api/
 COPY --from=giao_dien /app/dist/ web/address-may-cry/dist/
 

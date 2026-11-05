@@ -5,22 +5,17 @@ from pathlib import Path
 
 import duong_dan as dd  # gốc repo, CODE_ROOT vào sys.path
 CODE = str(dd.CODE_ROOT)
-from src.danh_muc import DanhMuc  # noqa: E402
-from src.tien_xu_ly.char_cnn import BoTachCharCNN  # noqa: E402
-from src.tien_xu_ly.xep_hang import BoXepHang  # noqa: E402
-from src.tien_xu_ly.chuan_ten_duong import TuDienDuong  # noqa: E402
-from src.chuan_hoa import BoChuanHoa  # noqa: E402
+from src.cau_hinh import tao_bo_chuan_hoa  # noqa: E402  (cấu hình chung với web)
 
 spec = importlib.util.spec_from_file_location('cham', dd.CODE_ROOT / 'danh_gia' / 'do_kiem_tra_test400.py')
 cham = importlib.util.module_from_spec(spec); spec.loader.exec_module(cham)
 
 cnn, ranker, ten = Path(sys.argv[1]), Path(sys.argv[2]), sys.argv[3]
-dm = DanhMuc(); ext = BoTachCharCNN(cnn, threads=1)
-pipe = BoChuanHoa(danh_muc=dm, bo_tach=ext, bo_xep_hang=BoXepHang(ranker, ext.ma_bam, dm.ma_bam),
-                  tu_dien_duong=TuDienDuong(dd.TU_DIEN_TRAIN),
-                  bao_ve_duong=True, tien_to_mac_dinh=os.environ.get("TIEN_TO", "0") == "1")
+# Nhãn test không tự thêm tiền tố (Số, Đường...) nên mặc định chấm với tien_to_mac_dinh=False; TIEN_TO=1 để bật.
+pipe = tao_bo_chuan_hoa(cnn=cnn, ranker=ranker, tien_to_mac_dinh=os.environ.get("TIEN_TO", "0") == "1")
 kq = cham.danh_gia_test_set(pipe, dd.TEST)
 out = (dd.KET_QUA / 'test400') / f'{ten}.json'
+out.parent.mkdir(parents=True, exist_ok=True)
 out.write_text(json.dumps(kq, ensure_ascii=False, indent=2), encoding='utf-8')
 toan = kq['toan_bo_400_mau']
 print(ten, '| 400 mẫu: đúng 6 trường', toan['dung_toan_bo_6_truong'], f"({toan['khop_toan_bo_6_truong_pct']}%)")
