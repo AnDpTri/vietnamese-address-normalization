@@ -21,7 +21,7 @@ from .du_lieu import GOC, TAT_CA_TAP, TRUONG, VAI_TRO, nap
 
 THU_MUC = GOC / 'rieng' / 'danh_gia_chuan'
 NHOM_BAO_CAO = ('that', 'sinh', 'do_thi', 'nong_thon', 'dia_chi_cu', 'xa_bi_chia', 'co_thon', 'co_duong',
-                'khong_xac_dinh_xa', 'nhan_da_duyet_ai', 'nhan_can_duyet')
+                'khong_xac_dinh_xa', 'nhan_da_duyet_ai', 'nhan_can_duyet', 'duyet_ai', 'duyet_nguoi', 'co_thon_tho')
 GIU_LAI = ('so_nha', 'ngo_ngach_hem', 'thon_xom', 'duong', 'xa_phuong', 'ma_xa', 'ma_tinh', 'canh_bao', 'xa_moi_ung_vien')
 
 

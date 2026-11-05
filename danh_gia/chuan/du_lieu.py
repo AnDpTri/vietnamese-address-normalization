@@ -91,10 +91,12 @@ def nap(tap, dm=None):
         p = GOC / 'rieng' / 'vang' / 'vang.csv'
         if not p.exists():
             return []
-        out = _tu_csv_nhan(p, tap, lambda r: (r.get('trang_thai') or '') == 'da_duyet', dm, ['that'])
-        nhom = {r['id']: (r.get('nhom') or '').split() for r in csv.DictReader(open(p, encoding='utf-8-sig'))}
+        # Nhận dòng người duyệt (da_duyet) và AI duyệt độc lập + kiểm mã (da_duyet_ai, xem rieng/vang/ai_duyet.py).
+        out = _tu_csv_nhan(p, tap, lambda r: (r.get('trang_thai') or '') in ('da_duyet', 'da_duyet_ai'), dm, ['that'])
+        dong = {r['id']: r for r in csv.DictReader(open(p, encoding='utf-8-sig'))}
         for m in out:
-            m.nhom.update(nhom.get(m.id, ()))
+            m.nhom.update((dong[m.id].get('nhom') or '').split())
+            m.nhom.add('duyet_ai' if dong[m.id]['trang_thai'] == 'da_duyet_ai' else 'duyet_nguoi')
         return out
     if tap == 'bo_kho':
         thu_muc = GOC / 'rieng' / 'bo_kho'

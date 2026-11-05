@@ -19,7 +19,9 @@ Kết quả ở `rieng/danh_gia_chuan/` (không lên git vì chứa đầu ra tr
 | `dev_sinh` | 1.200 địa chỉ sinh từ danh mục | hồi quy | Chỉ để loại (không được kém đi) |
 | `bo_kho` | 1.500 biến thể bẩn (gõ sai, không dấu, viết tắt, ghi chú giao hàng...) | độ bền | Để loại; tốt hơn chỉ cho "nhận yếu" |
 | `test400` | 400 địa chỉ OSM thật, nhãn AI **chưa người duyệt**, đã bị mở nhiều lần | tham khảo | Không |
-| `vang` | 300 địa chỉ thật **ngoài OSM** (cổng dữ liệu mở, Bộ Y tế, Sở Y tế), 25 tỉnh, 130 có thôn/bản; chỉ dòng người đã duyệt | xác nhận | Không dùng hằng ngày; chạy khi chốt phiên bản |
+| `vang` | 300 địa chỉ thật **ngoài OSM** (cổng dữ liệu mở, Bộ Y tế, Sở Y tế), 25 tỉnh; chấm 247 dòng `da_duyet_ai` (+ dòng người duyệt nếu có) | xác nhận | Không dùng hằng ngày; chạy khi chốt phiên bản |
+
+**Tập vàng là vàng AI, không phải vàng người** (quyết định của nhóm 05/11/2026). Quy trình (`rieng/vang/`): agy (Gemini) tách chữ → bộ tra cứu độc lập `data/test/scripts` gán mã → **lượt agy thứ hai, prompt khác, đóng vai người duyệt** → kiểm bằng mã: mọi giá trị phải có trong đầu vào; tra lại mã không được mơ hồ (trùng tên, không khớp, `chua_xac_dinh_xa`); mã xã không được khác mã do nguồn dữ liệu ghi. 247/300 qua; 53 giữ `cho_duyet` (không chấm). Lượt AI duyệt kết luận "đúng" 296/300, tức gần như đóng dấu: sàng lọc thật nằm ở các phép kiểm bằng mã. Dòng người duyệt (`da_duyet`) được chấm cùng và báo riêng nhóm `duyet_nguoi`.
 
 Không bao giờ gộp các tập thành một con số. Số đặt ở đầu báo cáo là `dev_that`, kèm khoảng tin cậy.
 
@@ -63,6 +65,7 @@ Mỗi lần nhận một thay đổi: ghi phán quyết, các số chính và l�
 - `bo_kho` cùng nguồn agy với dữ liệu train: thiên về những gì train đã có.
 - `test400`: nhãn AI chưa duyệt; 75 câu `khong_xac_dinh_xa` là nơi nhãn để trống vì thận trọng, nên "khẳng định sai" ở nhóm đó có thể là đúng thật.
 - Quy ước chấm là một lựa chọn: coi Đường = Phố và bỏ qua chữ loại thiếu có thể che lỗi chữ loại.
+- Tập vàng là nhãn AI: AI duyệt dễ xác nhận theo đề xuất; lỗi chung của bộ tra cứu và agy (ví dụ đọc sai viết tắt) có thể lọt. Trước khi lọc `chua_xac_dinh_xa`, 13/16 "khẳng định sai" trên vàng thực ra là lỗi nhãn. Khi có người duyệt, dòng `da_duyet` thay dần dòng AI.
 - Tập vàng thiên về địa chỉ tổ chức (doanh nghiệp, cơ sở y tế) và các tỉnh có cổng dữ liệu mở (Sơn La, Lạng Sơn, Đắk Lắk...), không đại diện địa chỉ hộ dân.
 
 ## 6. Số nền hiện tại (05/11/2026, `char_v3_tc` + `tu_dien_train`)
@@ -73,6 +76,8 @@ Mỗi lần nhận một thay đổi: ghi phán quyết, các số chính và l�
 | dev_sinh (1.200) | 97,2% (96,2–98,0) | 0 | 7 |
 | bo_kho (1.500) | 86,9% (85,1–88,5) | 14 (0,9%) | 26 |
 | test400 (tham khảo) | 69,8% (65,1–74,0) | 37 (9,2%) | 30 |
-| vang | chưa có dòng nào được duyệt | | |
+| **vang** (247, AI duyệt, ngoài OSM) | **82,2%** (76,9–86,5) | 5 (2,0%) | 7 |
+
+Tập vàng theo nhóm: đô thị 89,5%, nông thôn 78,5%, **có thôn 74,0%** (trường thôn 80,3%), địa chỉ cũ 88,1%. Điểm yếu lớn nhất là tách thôn/tổ/khối.
 
 Quyết định đầu tiên theo quy chuẩn: từ điển đường mặc định đổi từ `tu_dien_duong_v5.json` sang `tu_dien_train.json` (so_sanh td_v5 → td_train: NHẬN yếu; bộ khó đủ 6 trường 4 kém / 15 tốt, p = 0,019; điền thừa 38 → 26, p < 0,001; v5 bịa tên đường từ ghi chú như "gặp chị Hoa" → Đường Hoa).
