@@ -9,7 +9,9 @@ import sys
 import time
 import re
 import csv
+import copy
 import threading
+from collections import OrderedDict
 from dataclasses import asdict
 from pathlib import Path
 from typing import Dict, Any, Tuple, Optional, List
@@ -34,6 +36,19 @@ from src.kieu_du_lieu import KetQua
 PURE_SEPARATORS = set(" \t\r\n,;-–—|~#()[]{}")
 PHONE_RE = re.compile(r"(?:sđt|sdt|đt|dt|tel|phone|hotline|zalo|điện thoại)?[:.\s]*0\d{8,10}\b", re.IGNORECASE)
 
+# Cache kết quả theo đúng chuỗi đầu vào (LRU). AMC_CACHE=0 để tắt.
+# Mỗi mục khoảng 10–20 KB, 5.000 mục khoảng 50–100 MB.
+CACHE_TOI_DA = int(os.environ.get("AMC_CACHE", "5000"))
+# Ví dụ mẫu trên giao diện (web/address-may-cry/src/features/single/InputPanel.tsx),
+# nạp sẵn vào cache lúc khởi động để bấm ví dụ là có kết quả ngay.
+VI_DU_MAU = [
+    "45 XÔ VIẾT NGHỆ TĨNH P.AN CƯ- NINH KIỀU- CẦN THƠ",
+    "313, NGUYỄN VĂN LINH, PHƯỜNG AN KHÁNH, QUẬN NINH KIỀU, THÀNH PHỐ CẦN THƠ",
+    "110A CMT8, Phường An Thới, Quận Bình Thủy, TP Cần Thơ",
+    "Số 42, Phố Bồ Đề, Phường Bồ Đề, Quận Long Biên, Hà Nội",
+    "Thôn 4, Xã Hoằng Lộc, Huyện Hoằng Hóa, Tỉnh Thanh Hóa",
+]
+
 
 class NlpEngineAdapter:
     """Adapter bọc BoChuanHoa singleton và thread-safe cho HTTP API."""
@@ -52,6 +67,12 @@ class NlpEngineAdapter:
         self._cnn: Optional[BoTachCharCNN] = None
         self._ranker: Optional[BoXepHang] = None
         self._tdd: Optional[TuDienDuong] = None
+
+        # Cache LRU: chuỗi đầu vào -> (res_dict, status); có khóa riêng để không chờ khóa mô hình
+        self._cache: "OrderedDict[str, Tuple[Dict[str, Any], str]]" = OrderedDict()
+        self._cache_lock = threading.Lock()
+        self.cache_trung = 0
+        self.cache_truot = 0
 
         # Bảng tra cứu đối chiếu hành chính
         self._doi_chieu_xa: Dict[str, List[Dict[str, str]]] = {}
@@ -142,6 +163,18 @@ class NlpEngineAdapter:
             self.status = "error"
             self.error_message = f"Lỗi khởi tạo NLP Engine: {type(e).__name__}: {e}"
             self._pipe = None
+            return
+        self._nap_san_cache()
+
+    def _nap_san_cache(self) -> None:
+        """Chạy trước các ví dụ mẫu để chúng nằm sẵn trong cache. Lỗi ở đây không chặn khởi động."""
+        if CACHE_TOI_DA <= 0 or os.environ.get("AMC_LOG") == "1":
+            return
+        for dia_chi in VI_DU_MAU:
+            try:
+                self.normalize(dia_chi)
+            except Exception as e:
+                print(f"Cảnh báo nạp sẵn cache '{dia_chi}': {e}", file=sys.stderr)
 
     @classmethod
     def get_instance(cls) -> "NlpEngineAdapter":
@@ -435,6 +468,19 @@ class NlpEngineAdapter:
             raise RuntimeError("Engine chưa sẵn sàng hoặc đã gặp lỗi khởi tạo.")
 
         t0 = time.perf_counter()
+        # Cache theo đúng chuỗi gốc (không chuẩn hóa khoảng trắng, vì vị trí ký tự trong dau_vet phụ thuộc chuỗi).
+        # Chế độ nhật ký (AMC_LOG=1) bỏ qua cache để luôn có các bước trung gian.
+        dung_cache = CACHE_TOI_DA > 0 and os.environ.get("AMC_LOG") != "1"
+        if dung_cache:
+            with self._cache_lock:
+                muc = self._cache.get(address)
+                if muc is not None:
+                    self._cache.move_to_end(address)
+                    self.cache_trung += 1
+            if muc is not None:
+                # Trả bản sao vì server sửa dict (pop _chan_doan) trước khi gửi
+                return copy.deepcopy(muc[0]), round((time.perf_counter() - t0) * 1000.0, 2), muc[1]
+
         chan_doan = None
         with self._lock:
             # Khi bật nhật ký phát triển (AMC_LOG=1), lấy kèm các bước trung gian; kết quả giống hệt chuan_hoa.
@@ -473,4 +519,11 @@ class NlpEngineAdapter:
         )
 
         status = "needs_review" if needs_review else "processed"
+        if dung_cache:
+            with self._cache_lock:
+                self.cache_truot += 1
+                self._cache[address] = (copy.deepcopy(res_dict), status)
+                self._cache.move_to_end(address)
+                while len(self._cache) > CACHE_TOI_DA:
+                    self._cache.popitem(last=False)
         return res_dict, round(elapsed_ms, 2), status
