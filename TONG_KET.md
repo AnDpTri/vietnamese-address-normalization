@@ -27,7 +27,7 @@ Bài toán chỉ có **hai phần**, đo riêng từng phần:
 
 | Tập | Đủ 6 trường | Khẳng định sai mã xã |
 |---|---|---|
-| dev_that: 400 địa chỉ OSM thật (số chính) | **86,8%** (83,1–89,7) | 12 (3,0%) |
+| dev_osm_that: 400 địa chỉ OSM thật (số chính) | **86,8%** (83,1–89,7) | 12 (3,0%) |
 | dev_sinh: 1.200 địa chỉ sinh từ danh mục | 97,2% | 0 |
 | bộ khó (1.500) | 86,9% | 14 (0,9%) |
 | test400 (nhãn AI chưa duyệt, tham khảo) | 69,8% (quy ước chấm mới) | 37 (9,2%) |

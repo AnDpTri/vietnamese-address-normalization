@@ -1,7 +1,9 @@
 """Bộ đánh giá chuẩn. Xem danh_gia/chuan/QUY_CHUAN.md.
 
 Dùng (từ gốc repo, Python của .venv-neural):
-  python -m danh_gia.chuan chay <ten> [--tap dev_that,dev_sinh,bo_kho,test400,vang] [--cnn ..] [--ranker ..] [--tu-dien ..]
+  python -m danh_gia.chuan ds                       # liệt kê bộ dữ liệu: mã, tên, mô tả, nguồn, vai trò, số câu
+  python -m danh_gia.chuan chay <ten> [--tap dev_osm_that,dev_sinh_danh_muc,kho_bien_the_ban,test_osm_nhan_ai,vang_ngoai_osm_ai]
+                                      [--cnn ..] [--ranker ..] [--tu-dien ..]
   python -m danh_gia.chuan cham <ten>
   python -m danh_gia.chuan so_sanh <ten_A_dang_dung> <ten_B_de_xuat>
 Kết quả ở rieng/danh_gia_chuan/<ten>/ (không lên git vì chứa đầu ra trên đáp án kín).
@@ -17,7 +19,7 @@ from dataclasses import asdict
 from pathlib import Path
 
 from .cham import cham_mau, so_sanh_cap, tong_hop
-from .du_lieu import GOC, TAT_CA_TAP, TRUONG, VAI_TRO, nap
+from .du_lieu import BO_DU_LIEU, GOC, MA_CU, TAP_CHINH, TAT_CA_TAP, TRUONG, VAI_TRO, ma_tap, nap
 
 THU_MUC = GOC / 'rieng' / 'danh_gia_chuan'
 NHOM_BAO_CAO = ('that', 'sinh', 'do_thi', 'nong_thon', 'dia_chi_cu', 'xa_bi_chia', 'co_thon', 'co_duong',
@@ -52,7 +54,10 @@ def chay(a):
             'cnn': str(cnn), 'cnn_sha': _sha(cnn), 'ranker': str(ranker), 'ranker_sha': _sha(ranker),
             'tu_dien_duong': str(tu_dien), 'tu_dien_sha': _sha(tu_dien),
             'bao_ve_duong': cau_hinh.BAO_VE_DUONG, 'tien_to_mac_dinh': cau_hinh.TIEN_TO_MAC_DINH, 'tap': {}}
-    for tap in a.tap.split(','):
+    cu = ra / 'meta.json'
+    if cu.exists():  # chạy thêm tập vào một lần đo đã có: giữ danh sách tập cũ
+        meta['tap'] = {ma_tap(k): v for k, v in json.loads(cu.read_text(encoding='utf-8')).get('tap', {}).items()}
+    for tap in (ma_tap(t) for t in a.tap.split(',')):
         mau = nap(tap, dm)
         if not mau:
             print(f'{tap}: không có trên máy, bỏ qua'); continue
@@ -71,7 +76,27 @@ def chay(a):
 
 def _doc(ten, tap):
     p = THU_MUC / ten / f'{tap}.jsonl'
+    if not p.exists():  # kết quả lưu trước khi đổi mã tập
+        p = next((THU_MUC / ten / f'{cu}.jsonl' for cu, moi in MA_CU.items() if moi == tap), p)
     return {d['id']: d for d in map(json.loads, open(p, encoding='utf-8'))} if p.exists() else None
+
+
+def _gioi_thieu(tap, n=None):
+    t = BO_DU_LIEU[tap]
+    return [f"## {t['ten']} (`{tap}`)", '',
+            f"{t['mo_ta']}", '',
+            f"Nguồn: `{t['nguon']}`. Vai trò: **{TEN_VAI_TRO[t['vai_tro']]}**" + (f". Số câu chấm: {n}." if n is not None else '.'), '']
+
+
+TEN_VAI_TRO = {'chon': 'số chính, dùng để chọn cấu hình', 'hoi_quy': 'kiểm hồi quy, chỉ để loại',
+               'do_ben': 'kiểm độ bền, chỉ để loại (tốt hơn chỉ cho NHẬN yếu)', 'tham_khao': 'tham khảo, không dùng quyết định',
+               'xac_nhan': 'xác nhận khi chốt phiên bản, không dùng quyết định'}
+
+
+def ds(a):
+    dm = _danh_muc()
+    for tap in TAT_CA_TAP:
+        print('\n'.join(_gioi_thieu(tap, len(nap(tap, dm)))))
 
 
 def _cham_tap(ten, tap, dm):
@@ -112,7 +137,7 @@ def cham(a):
         mau, ket, toc = _cham_tap(a.ten, tap, dm)
         if mau is None:
             continue
-        md += [f"## {tap} (vai trò: {VAI_TRO[tap]}; tốc độ trung vị {toc['trung_vi_ms']:.0f} ms, p95 {toc['p95_ms']:.0f} ms)", '', TIEU_DE,
+        md += _gioi_thieu(tap, len(mau)) + [f"Tốc độ: trung vị {toc['trung_vi_ms']:.0f} ms/câu, p95 {toc['p95_ms']:.0f} ms.", '', TIEU_DE,
                _dong('**tất cả**', tong_hop(mau, ket))]
         js[tap] = {'tat_ca': tong_hop(mau, ket), 'toc_do': toc}
         nhom_co = sorted({g for m in mau for g in m.nhom if g.startswith('nhieu_')})
@@ -133,7 +158,7 @@ def cham(a):
             md += ['', dong]
         md.append('')
     md += ['KTC 95%: khoảng tin cậy Wilson. "≤x" là cận trên KTC của tỷ lệ khẳng định sai.',
-           'Số chính để chọn cấu hình là dev_that. test400 có nhãn AI chưa người duyệt: chỉ tham khảo.']
+           f"Số chính để chọn cấu hình là `{TAP_CHINH}` ({BO_DU_LIEU[TAP_CHINH]['ten']})."]
     (THU_MUC / a.ten / 'bao_cao.md').write_text('\n'.join(md), encoding='utf-8')
     (THU_MUC / a.ten / 'bao_cao.json').write_text(json.dumps(js, ensure_ascii=False, indent=1), encoding='utf-8')
     print('\n'.join(md))
@@ -156,7 +181,7 @@ def so_sanh(a):
         ta, tb = tong_hop(chung, ka), tong_hop(chung, kb)
         d, s, t = ss['du_6'], ss['khong_khang_dinh_sai'], ss['khong_dien_thua']
         ket_luan[tap] = ss
-        md.append(f"| {tap} | {VAI_TRO[tap]} | {len(chung)} | {ta['du_6_pct']:.1f} → {tb['du_6_pct']:.1f} | {d['a_dung_b_sai']} | {d['a_sai_b_dung']} "
+        md.append(f"| {BO_DU_LIEU[tap]['ten']} (`{tap}`) | {TEN_VAI_TRO[VAI_TRO[tap]].split(',')[0]} | {len(chung)} | {ta['du_6_pct']:.1f} → {tb['du_6_pct']:.1f} | {d['a_dung_b_sai']} | {d['a_sai_b_dung']} "
                   f"| {d['p']:.3f} | {d['ket_luan']} | {ta['xa_khang_dinh_sai']} → {tb['xa_khang_dinh_sai']} | {s['p']:.3f} | {s['ket_luan']} "
                   f"| {ta['dien_thua']} → {tb['dien_thua']} | {t['p']:.3f} | {t['ket_luan']} |")
         ra_a, ra_b = _doc(a.a, tap), _doc(a.b, tap)
@@ -175,8 +200,8 @@ def so_sanh(a):
            if VAI_TRO[tap] in ('chon', 'hoi_quy', 'do_ben')}
     if loai:
         phan_quyet = 'LOẠI B: ' + '; '.join(loai)
-    elif tot.get('dev_that'):
-        phan_quyet = 'NHẬN B (mạnh): dev_that tốt hơn có ý nghĩa về ' + ', '.join(tot['dev_that'])
+    elif tot.get(TAP_CHINH):
+        phan_quyet = f'NHẬN B (mạnh): {TAP_CHINH} tốt hơn có ý nghĩa về ' + ', '.join(tot[TAP_CHINH])
     elif any(tot.values()):
         phan_quyet = ('NHẬN B (yếu): không tập nào kém hơn; tốt hơn có ý nghĩa chỉ ở tập phụ: '
                       + '; '.join(f"{tap} ({', '.join(v)})" for tap, v in tot.items() if v)
@@ -199,6 +224,7 @@ def main():
     c.add_argument('--cnn'); c.add_argument('--ranker'); c.add_argument('--tu-dien')
     c.set_defaults(ham=chay)
     c = sp.add_parser('cham'); c.add_argument('ten'); c.set_defaults(ham=cham)
+    c = sp.add_parser('ds'); c.set_defaults(ham=ds)
     c = sp.add_parser('so_sanh'); c.add_argument('a'); c.add_argument('b'); c.set_defaults(ham=so_sanh)
     a = ap.parse_args()
     a.ham(a)

@@ -1,11 +1,7 @@
 """Nạp mọi tập đánh giá về một khuôn chung (Mau) để chấm bằng một quy ước duy nhất.
 
-Các tập và vai trò (xem danh_gia/chuan/QUY_CHUAN.md):
-  dev_that  400 địa chỉ OSM thật trong dev (nhãn máy + sửa)      -> CHỌN CẤU HÌNH, số chính
-  dev_sinh  1.200 địa chỉ sinh từ danh mục (dev_goc + dev_kho)    -> kiểm hồi quy, không là số chính
-  bo_kho    1.500 biến thể bẩn (rieng/bo_kho, đáp án giữ kín)      -> kiểm độ bền, không là số chính
-  test400   400 địa chỉ OSM thật, nhãn AI CHƯA người duyệt         -> tham khảo, không dùng để chọn
-  vang      300 địa chỉ thật ngoài OSM, người duyệt (rieng/vang)   -> xác nhận khi chốt phiên bản
+Danh mục tập (mã, tên, mô tả, vai trò): BO_DU_LIEU bên dưới; in ra bằng `python -m danh_gia.chuan ds`.
+Xem danh_gia/chuan/QUY_CHUAN.md.
 """
 import csv
 import json
@@ -17,9 +13,61 @@ GOC = Path(__file__).resolve().parents[2]
 TRUONG_CHI_TIET = ('so_nha', 'ngo_ngach_hem', 'thon_xom', 'duong')
 TRUONG = TRUONG_CHI_TIET + ('ma_xa', 'ma_tinh')
 
-# Vai trò của từng tập trong luật chấp nhận
-VAI_TRO = {'dev_that': 'chon', 'dev_sinh': 'hoi_quy', 'bo_kho': 'do_ben', 'test400': 'tham_khao', 'vang': 'xac_nhan'}
-TAT_CA_TAP = tuple(VAI_TRO)
+# Danh mục bộ dữ liệu. Mã tự mô tả: <loại>_<nguồn>_<cách gán nhãn>.
+# vai_tro: chon (số chính, chọn cấu hình) | hoi_quy | do_ben (chỉ để loại) | tham_khao | xac_nhan (không tham gia luật).
+BO_DU_LIEU = {
+    'dev_osm_that': {
+        'ten': 'Dev: địa chỉ OSM thật',
+        'vai_tro': 'chon',
+        'nguon': 'data/dev/nhan_sua/dev_goc.csv, các dòng loai_nhan = nhan_may',
+        'mo_ta': ('Địa chỉ thật lấy từ OpenStreetMap (thẻ addr:full hoặc ghép các thẻ addr:*) của cơ sở công khai. '
+                  'Nhãn do máy gán từ thẻ, sau đó sửa (agy dò 5 gói + sửa tay). Chủ yếu đô thị; rất ít thôn. '
+                  'SỐ CHÍNH để chọn cấu hình; đã dùng nhiều lần nên không còn là phép đo độc lập.'),
+    },
+    'dev_sinh_danh_muc': {
+        'ten': 'Dev: địa chỉ sinh từ danh mục hành chính',
+        'vai_tro': 'hoi_quy',
+        'nguon': 'data/dev/nhan_sua/dev_goc.csv (loai_nhan = tong_hop) + data/dev/nhan_sua/dev_kho.csv',
+        'mo_ta': ('Địa chỉ do máy ghép theo khuôn từ danh mục xã cũ/mới (ví dụ "Số 72, Đường Đội Cấn, Xã Nga Liên, '
+                  'Huyện Nga Sơn, Tỉnh Thanh Hóa"): sạch, đúng thứ tự, tên đường ghép bừa. Cùng cách sinh với một phần train. '
+                  'Chỉ dùng kiểm hồi quy: không được kém đi; không phải số chính.'),
+    },
+    'kho_bien_the_ban': {
+        'ten': 'Bộ khó: biến thể bẩn của địa chỉ',
+        'vai_tro': 'do_ben',
+        'nguon': 'rieng/bo_kho (ra/ra_*.csv + dap_an_giu_kin.json, đáp án giữ kín, không lên git)',
+        'mo_ta': ('Địa chỉ do agy viết rồi làm bẩn theo 8 kiểu: sạch, không dấu, gõ sai, viết tắt, đảo thứ tự hành chính, '
+                  'đính dấu phẩy, chi tiết khó, chữ tạp nhầm (ghi chú giao hàng, số điện thoại). Đáp án là mã xã/tỉnh '
+                  'kỳ vọng (nhiều ứng viên = phải để trống). Đo độ bền với chữ bẩn; cùng nguồn agy với train nên dễ thiên lệch.'),
+    },
+    'test_osm_nhan_ai': {
+        'ten': 'Test: địa chỉ OSM thật, nhãn AI chưa người duyệt',
+        'vai_tro': 'tham_khao',
+        'nguon': 'data/test/dia_chi_test.csv',
+        'mo_ta': ('Địa chỉ thật của cơ sở công khai trên OSM (150 addr:full nguyên văn, 250 ghép thẻ), 32 tỉnh. '
+                  'Nhãn agy tách + tra mã độc lập; AI tự duyệt 292 dòng, 108 dòng bảo lưu; 0 dòng người duyệt. '
+                  'Đã bị mở nhiều lần khi phát triển: chỉ tham khảo, không dùng để quyết định.'),
+    },
+    'vang_ngoai_osm_ai': {
+        'ten': 'Vàng: địa chỉ thật ngoài OSM, AI duyệt',
+        'vai_tro': 'xac_nhan',
+        'nguon': 'rieng/vang/vang.csv (không lên git), dòng trang_thai = da_duyet_ai hoặc da_duyet',
+        'mo_ta': ('300 địa chỉ thật không lấy từ OSM: cổng dữ liệu mở Sơn La, Tây Ninh, Thanh Hóa, Hà Tĩnh; Sở Y tế Đắk Lắk; '
+                  'Bộ Y tế; văn phòng công chứng, thừa phát lại. 25 tỉnh, nhiều thôn/bản/tổ/khối. Nhãn: agy tách -> tra mã '
+                  'độc lập -> lượt agy duyệt thứ hai -> kiểm bằng mã; 247 dòng được nhận. Vàng AI, không phải vàng người. '
+                  'Chỉ chạy khi chốt phiên bản.'),
+    },
+}
+# Mã cũ (trước 05/11/2026) vẫn nhận được để đọc kết quả đã lưu.
+MA_CU = {'dev_that': 'dev_osm_that', 'dev_sinh': 'dev_sinh_danh_muc', 'bo_kho': 'kho_bien_the_ban',
+         'test400': 'test_osm_nhan_ai', 'vang': 'vang_ngoai_osm_ai'}
+VAI_TRO = {k: v['vai_tro'] for k, v in BO_DU_LIEU.items()}
+TAT_CA_TAP = tuple(BO_DU_LIEU)
+TAP_CHINH = 'dev_osm_that'
+
+
+def ma_tap(tap):
+    return MA_CU.get(tap, tap)
 
 
 @dataclass
@@ -73,20 +121,21 @@ def _tu_csv_nhan(duong_dan, tap, loc, dm, nhom_them=()):
 
 def nap(tap, dm=None):
     """Trả về list[Mau] của một tập; tập không có trên máy thì trả []."""
+    tap = ma_tap(tap)
     nhan_sua = GOC / 'data' / 'dev' / 'nhan_sua'
-    if tap == 'dev_that':
+    if tap == 'dev_osm_that':
         return _tu_csv_nhan(nhan_sua / 'dev_goc.csv', tap, lambda r: r['loai_nhan'] == 'nhan_may', dm, ['that'])
-    if tap == 'dev_sinh':
+    if tap == 'dev_sinh_danh_muc':
         return (_tu_csv_nhan(nhan_sua / 'dev_goc.csv', tap, lambda r: r['loai_nhan'] != 'nhan_may', dm, ['sinh'])
                 + _tu_csv_nhan(nhan_sua / 'dev_kho.csv', tap, lambda r: True, dm, ['sinh']))
-    if tap == 'test400':
+    if tap == 'test_osm_nhan_ai':
         out = _tu_csv_nhan(GOC / 'data' / 'test' / 'dia_chi_test.csv', tap, lambda r: True, dm, ['that'])
         trang_thai = {r['id']: r['trang_thai_nhan'] for r in csv.DictReader(
             open(GOC / 'data' / 'test' / 'dia_chi_test.csv', encoding='utf-8-sig'))}
         for m in out:
             m.nhom.add('nhan_' + trang_thai[m.id])
         return out
-    if tap == 'vang':
+    if tap == 'vang_ngoai_osm_ai':
         # Tập vàng giữ kín, không lên git: rieng/vang/vang.csv (chỉ dòng trang_thai=da_duyet được chấm).
         p = GOC / 'rieng' / 'vang' / 'vang.csv'
         if not p.exists():
@@ -98,7 +147,7 @@ def nap(tap, dm=None):
             m.nhom.update((dong[m.id].get('nhom') or '').split())
             m.nhom.add('duyet_ai' if dong[m.id]['trang_thai'] == 'da_duyet_ai' else 'duyet_nguoi')
         return out
-    if tap == 'bo_kho':
+    if tap == 'kho_bien_the_ban':
         thu_muc = GOC / 'rieng' / 'bo_kho'
         if not (thu_muc / 'dap_an_giu_kin.json').exists():
             return []

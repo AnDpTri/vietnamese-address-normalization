@@ -4,7 +4,8 @@ Mọi số đo báo cáo, mọi quyết định đổi mô hình, từ điển, 
 
 ```bash
 PY=.venv-neural/Scripts/python.exe
-$PY -X utf8 -B -m danh_gia.chuan chay <ten> [--cnn ..] [--ranker ..] [--tu-dien ..] [--tap dev_that,dev_sinh,bo_kho,test400,vang]
+$PY -X utf8 -B -m danh_gia.chuan chay <ten> [--cnn ..] [--ranker ..] [--tu-dien ..] [--tap dev_osm_that,dev_sinh_danh_muc,kho_bien_the_ban,test_osm_nhan_ai,vang_ngoai_osm_ai]
+$PY -X utf8 -B -m danh_gia.chuan ds        # liệt kê bộ dữ liệu: mã, tên, mô tả, nguồn, vai trò, số câu
 $PY -X utf8 -B -m danh_gia.chuan cham <ten>                  # báo cáo theo tập và theo nhóm
 $PY -X utf8 -B -m danh_gia.chuan so_sanh <ten_dang_dung> <ten_de_xuat>   # so cặp + phán quyết + từng câu đổi
 ```
@@ -13,17 +14,19 @@ Kết quả ở `rieng/danh_gia_chuan/` (không lên git vì chứa đầu ra tr
 
 ## 1. Tập dữ liệu và vai trò
 
-| Tập | Nội dung | Vai trò | Dùng để quyết định? |
-|---|---|---|---|
-| `dev_that` | 400 địa chỉ OSM thật trong dev, nhãn máy rồi sửa | **chọn**: số chính | Có |
-| `dev_sinh` | 1.200 địa chỉ sinh từ danh mục | hồi quy | Chỉ để loại (không được kém đi) |
-| `bo_kho` | 1.500 biến thể bẩn (gõ sai, không dấu, viết tắt, ghi chú giao hàng...) | độ bền | Để loại; tốt hơn chỉ cho "nhận yếu" |
-| `test400` | 400 địa chỉ OSM thật, nhãn AI **chưa người duyệt**, đã bị mở nhiều lần | tham khảo | Không |
-| `vang` | 300 địa chỉ thật **ngoài OSM** (cổng dữ liệu mở, Bộ Y tế, Sở Y tế), 25 tỉnh; chấm 247 dòng `da_duyet_ai` (+ dòng người duyệt nếu có) | xác nhận | Không dùng hằng ngày; chạy khi chốt phiên bản |
+Mã tập đặt theo `<loại>_<nguồn>_<cách gán nhãn>`. Tên, mô tả, nguồn, vai trò ghi một chỗ duy nhất: `BO_DU_LIEU` trong [du_lieu.py](du_lieu.py); lệnh `ds` in ra, và mọi báo cáo `cham`/`so_sanh` in kèm. Mã cũ (`dev_that`, `dev_sinh`, `bo_kho`, `test400`, `vang`) vẫn được nhận.
+
+| Mã | Tên | Số câu | Nội dung và nhãn | Vai trò |
+|---|---|---|---|---|
+| `dev_osm_that` | Dev: địa chỉ OSM thật | 400 | Cơ sở công khai trên OSM (addr:full hoặc ghép thẻ); nhãn máy gán rồi sửa (agy dò + sửa tay); chủ yếu đô thị | **Số chính**, chọn cấu hình |
+| `dev_sinh_danh_muc` | Dev: địa chỉ sinh từ danh mục hành chính | 1.200 | Máy ghép theo khuôn từ danh mục xã; sạch, tên đường ghép bừa | Kiểm hồi quy, chỉ để loại |
+| `kho_bien_the_ban` | Bộ khó: biến thể bẩn của địa chỉ | 1.500 | agy viết rồi làm bẩn theo 8 kiểu (gõ sai, không dấu, viết tắt, đảo thứ tự, ghi chú giao hàng...); đáp án giữ kín | Kiểm độ bền, chỉ để loại; tốt hơn chỉ cho NHẬN yếu |
+| `test_osm_nhan_ai` | Test: địa chỉ OSM thật, nhãn AI chưa người duyệt | 400 | Cơ sở công khai trên OSM, 32 tỉnh; nhãn agy + tra mã độc lập; đã bị mở nhiều lần | Tham khảo |
+| `vang_ngoai_osm_ai` | Vàng: địa chỉ thật ngoài OSM, AI duyệt | 247 / 300 | Cổng dữ liệu mở, Sở Y tế, Bộ Y tế; 25 tỉnh; nhãn agy + tra mã độc lập + lượt AI duyệt + kiểm mã | Xác nhận khi chốt phiên bản |
 
 **Tập vàng là vàng AI, không phải vàng người** (quyết định của nhóm 05/11/2026). Quy trình (`rieng/vang/`): agy (Gemini) tách chữ → bộ tra cứu độc lập `data/test/scripts` gán mã → **lượt agy thứ hai, prompt khác, đóng vai người duyệt** → kiểm bằng mã: mọi giá trị phải có trong đầu vào; tra lại mã không được mơ hồ (trùng tên, không khớp, `chua_xac_dinh_xa`); mã xã không được khác mã do nguồn dữ liệu ghi. 247/300 qua; 53 giữ `cho_duyet` (không chấm). Lượt AI duyệt kết luận "đúng" 296/300, tức gần như đóng dấu: sàng lọc thật nằm ở các phép kiểm bằng mã. Dòng người duyệt (`da_duyet`) được chấm cùng và báo riêng nhóm `duyet_nguoi`.
 
-Không bao giờ gộp các tập thành một con số. Số đặt ở đầu báo cáo là `dev_that`, kèm khoảng tin cậy.
+Không bao giờ gộp các tập thành một con số. Số đặt ở đầu báo cáo là `dev_osm_that`, kèm khoảng tin cậy.
 
 ## 2. Quy ước chấm (một quy ước cho mọi tập)
 
@@ -43,27 +46,27 @@ Không bao giờ gộp các tập thành một con số. Số đặt ở đầu 
 | Xã cũ bị chia | Vàng phân giải được: đúng mã %. Vàng phải để trống: để trống đúng %, gắn cờ `xa_bi_chia` %, danh sách ứng viên phủ đủ đáp án % |
 | Tốc độ | Trung vị, p95 ms/câu (một luồng CPU) |
 
-Nhóm: `that`/`sinh`, `do_thi`/`nong_thon` (theo loại xã vàng), `dia_chi_cu` (chuyển đổi cũ→mới), `xa_bi_chia`, `co_thon`, `co_duong`, `khong_xac_dinh_xa`, `nhieu_*` (bộ khó), `nhan_*` (test400).
+Nhóm: `that`/`sinh`, `do_thi`/`nong_thon` (theo loại xã vàng), `dia_chi_cu` (chuyển đổi cũ→mới), `xa_bi_chia`, `co_thon`, `co_duong`, `khong_xac_dinh_xa`, `nhieu_*` (bộ khó), `nhan_*` (test_osm_nhan_ai).
 
 ## 4. So sánh và luật chấp nhận
 
 So cặp trên cùng câu bằng McNemar chính xác (đếm câu A đúng B sai và A sai B đúng) cho ba phép đo: đủ 6 trường, không khẳng định sai, không điền thừa. Kết luận mỗi ô: TỐT HƠN / KÉM HƠN (p < 0,05) hoặc KHÔNG PHÂN BIỆT.
 
-Phán quyết (tự in ra; `test400` và `vang` không tham gia):
+Phán quyết (tự in ra; `test_osm_nhan_ai` và `vang_ngoai_osm_ai` không tham gia):
 
-1. **LOẠI**: kém hơn có ý nghĩa ở bất kỳ phép đo nào trên `dev_that`, `dev_sinh` hoặc `bo_kho`.
-2. **NHẬN (mạnh)**: không bị loại và `dev_that` tốt hơn có ý nghĩa.
-3. **NHẬN (yếu)**: không bị loại, chỉ tốt hơn có ý nghĩa ở `dev_sinh`/`bo_kho`. Phải đọc các câu đổi kết quả và ghi lý do trong commit.
+1. **LOẠI**: kém hơn có ý nghĩa ở bất kỳ phép đo nào trên `dev_osm_that`, `dev_sinh_danh_muc` hoặc `kho_bien_the_ban`.
+2. **NHẬN (mạnh)**: không bị loại và `dev_osm_that` tốt hơn có ý nghĩa.
+3. **NHẬN (yếu)**: không bị loại, chỉ tốt hơn có ý nghĩa ở `dev_sinh_danh_muc`/`kho_bien_the_ban`. Phải đọc các câu đổi kết quả và ghi lý do trong commit.
 4. **TRUNG TÍNH**: không có khác biệt có ý nghĩa. Giữ bản đang dùng, trừ khi có lý do ngoài số đo (ghi rõ).
 
-Mỗi lần nhận một thay đổi: ghi phán quyết, các số chính và lý do vào commit; chạy `vang` khi chốt phiên bản để báo cáo.
+Mỗi lần nhận một thay đổi: ghi phán quyết, các số chính và lý do vào commit; chạy `vang_ngoai_osm_ai` khi chốt phiên bản để báo cáo.
 
 ## 5. Giới hạn đã biết (đọc số cho đúng)
 
 - **Độ nhạy thấp**: với 400 câu, KTC 95% rộng khoảng ±3 điểm; chênh dưới khoảng 2 điểm thường không phân biệt được. 300 câu vàng còn rộng hơn (±5 điểm ở mức 70%). Muốn thấy cải tiến nhỏ phải tăng cỡ tập.
-- `dev_that` đã được dùng để chọn cấu hình nhiều lần: không còn là phép đo độc lập.
-- `bo_kho` cùng nguồn agy với dữ liệu train: thiên về những gì train đã có.
-- `test400`: nhãn AI chưa duyệt; 75 câu `khong_xac_dinh_xa` là nơi nhãn để trống vì thận trọng, nên "khẳng định sai" ở nhóm đó có thể là đúng thật.
+- `dev_osm_that` đã được dùng để chọn cấu hình nhiều lần: không còn là phép đo độc lập.
+- `kho_bien_the_ban` cùng nguồn agy với dữ liệu train: thiên về những gì train đã có.
+- `test_osm_nhan_ai`: nhãn AI chưa duyệt; 75 câu `khong_xac_dinh_xa` là nơi nhãn để trống vì thận trọng, nên "khẳng định sai" ở nhóm đó có thể là đúng thật.
 - Quy ước chấm là một lựa chọn: coi Đường = Phố và bỏ qua chữ loại thiếu có thể che lỗi chữ loại.
 - Tập vàng là nhãn AI: AI duyệt dễ xác nhận theo đề xuất; lỗi chung của bộ tra cứu và agy (ví dụ đọc sai viết tắt) có thể lọt. Trước khi lọc `chua_xac_dinh_xa`, 13/16 "khẳng định sai" trên vàng thực ra là lỗi nhãn. Khi có người duyệt, dòng `da_duyet` thay dần dòng AI.
 - Tập vàng thiên về địa chỉ tổ chức (doanh nghiệp, cơ sở y tế) và các tỉnh có cổng dữ liệu mở (Sơn La, Lạng Sơn, Đắk Lắk...), không đại diện địa chỉ hộ dân.
@@ -72,11 +75,11 @@ Mỗi lần nhận một thay đổi: ghi phán quyết, các số chính và l�
 
 | Tập | Đủ 6 trường | Khẳng định sai mã xã | Điền thừa |
 |---|---|---|---|
-| dev_that (400) | **86,8%** (83,1–89,7) | 12 (3,0%) | 11 |
-| dev_sinh (1.200) | 97,2% (96,2–98,0) | 0 | 7 |
-| bo_kho (1.500) | 86,9% (85,1–88,5) | 14 (0,9%) | 26 |
-| test400 (tham khảo) | 69,8% (65,1–74,0) | 37 (9,2%) | 30 |
-| **vang** (247, AI duyệt, ngoài OSM) | **82,2%** (76,9–86,5) | 5 (2,0%) | 7 |
+| dev_osm_that (400) | **86,8%** (83,1–89,7) | 12 (3,0%) | 11 |
+| dev_sinh_danh_muc (1.200) | 97,2% (96,2–98,0) | 0 | 7 |
+| kho_bien_the_ban (1.500) | 86,9% (85,1–88,5) | 14 (0,9%) | 26 |
+| test_osm_nhan_ai (tham khảo) | 69,8% (65,1–74,0) | 37 (9,2%) | 30 |
+| **vang_ngoai_osm_ai** (247, AI duyệt, ngoài OSM) | **82,2%** (76,9–86,5) | 5 (2,0%) | 7 |
 
 Tập vàng theo nhóm: đô thị 89,5%, nông thôn 78,5%, **có thôn 74,0%** (trường thôn 80,3%), địa chỉ cũ 88,1%. Điểm yếu lớn nhất là tách thôn/tổ/khối.
 
