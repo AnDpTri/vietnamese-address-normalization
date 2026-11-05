@@ -4,7 +4,8 @@
 
 Nhận địa chỉ nhập tự do (không dấu, viết tắt, sai chính tả, lộn thứ tự, ghi theo địa giới cũ) và trả về địa chỉ chuẩn theo đơn vị hành chính sau ngày 1/7/2025. Chạy offline trên CPU, không dùng LLM hay API.
 
-- **[TONG_KET.md](TONG_KET.md)**: hệ thống hiện tại, số đo, nhật ký các hướng đã thử, lỗi đã biết. Đọc file này trước.
+- **[docs/TAI_LIEU.md](docs/TAI_LIEU.md)**: tài liệu đầy đủ (bài toán, kiến trúc từng bước, dữ liệu, mô hình, đánh giá, web/API, triển khai, cấu hình, quy trình phát triển). Đọc file này trước.
+- [TONG_KET.md](TONG_KET.md): số đo, nhật ký các hướng đã thử, lỗi đã biết.
 - [bai_toan.md](bai_toan.md): đặc tả bài toán.
 - [bao_cao/](bao_cao/): báo cáo tiến độ tuần 3, tuần 4 và báo cáo cuối kỳ (Word, PDF).
 

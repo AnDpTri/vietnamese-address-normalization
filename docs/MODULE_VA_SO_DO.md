@@ -1,5 +1,7 @@
 # Module và số đo riêng từng tầng
 
+> **Lỗi thời từ 31/10/2026** (đường dẫn module và số đo đã đổi). Tài liệu hiện hành: [TAI_LIEU.md](TAI_LIEU.md); số đo: [danh_gia/chuan/QUY_CHUAN.md](../danh_gia/chuan/QUY_CHUAN.md). Giữ file này làm lịch sử.
+
 Cập nhật 29/10/2026. Đây là bản đồ triển khai hiện tại; sơ đồ CRF/logistic
 regression trong tài liệu thiết kế cũ được giữ làm lịch sử.
 
