@@ -5,6 +5,7 @@ import { IconAlertTriangle } from '../../components/Icons';
 import { InputPanel, MAX_CHARS } from './InputPanel';
 import { ResultView } from './ResultView';
 import { PipelineView } from './PipelineView';
+import { StepsView } from './StepsView';
 import { SessionHistory, type HistoryItem } from './SessionHistory';
 import './single.css';
 
@@ -23,6 +24,7 @@ export const SingleWorkspace: React.FC = () => {
   const [elapsed, setElapsed] = useState(0);
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [chiTiet, setChiTiet] = useState(false);
+  const [tungBuoc, setTungBuoc] = useState(false);
 
   const abortRef = useRef<AbortController | null>(null);
   const timerRef = useRef<number | null>(null);
@@ -34,8 +36,8 @@ export const SingleWorkspace: React.FC = () => {
     }
   };
 
-  const submit = useCallback(async () => {
-    const trimmed = input.trim();
+  const submit = useCallback(async (text?: string) => {
+    const trimmed = (text ?? input).trim();
     if (!trimmed) {
       setFieldError('Hãy nhập địa chỉ cần chuẩn hóa rồi bấm “Chuẩn hóa địa chỉ”.');
       document.getElementById('address-input')?.focus();
@@ -59,7 +61,7 @@ export const SingleWorkspace: React.FC = () => {
     timerRef.current = window.setInterval(() => setElapsed(Math.round(performance.now() - start)), 100);
 
     try {
-      const res = await normalizeAddress(trimmed, controller.signal);
+      const res = await normalizeAddress(trimmed, controller.signal, tungBuoc);
       setResponse(res);
       setHistory((prev) => [{ timestamp: Date.now(), input: trimmed, response: res }, ...prev].slice(0, 10));
     } catch (err: unknown) {
@@ -71,12 +73,18 @@ export const SingleWorkspace: React.FC = () => {
         stopTimer();
       }
     }
-  }, [input]);
+  }, [input, tungBuoc]);
+
+  // Bật "Xem từng bước" khi đang có kết quả thường: chạy lại địa chỉ đó để lấy các bước trung gian
+  useEffect(() => {
+    if (tungBuoc && response && !response.giai_thich && !loading) submit(response.input);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tungBuoc]);
 
   // Trên màn hình hẹp kết quả nằm dưới ô nhập: đưa tiêu đề kết quả vào tầm nhìn sau mỗi lần xử lý xong
   useEffect(() => {
     if (!response || loading || !window.matchMedia('(max-width: 1023px)').matches) return;
-    const el = document.getElementById('result-title');
+    const el = document.getElementById('steps-title') ?? document.getElementById('result-title');
     el?.scrollIntoView({ block: 'start' });
     el?.focus({ preventScroll: true });
   }, [response, loading]);
@@ -107,6 +115,8 @@ export const SingleWorkspace: React.FC = () => {
             loading={loading}
             elapsed={elapsed}
             error={fieldError}
+            tungBuoc={tungBuoc}
+            onTungBuoc={setTungBuoc}
           />
           <SessionHistory
             items={history}
@@ -124,7 +134,7 @@ export const SingleWorkspace: React.FC = () => {
               <div>
                 <strong>Chưa hoàn tất yêu cầu</strong>
                 <p>{error}</p>
-                <button type="button" className="btn btn-sm" onClick={submit}>Thử lại</button>
+                <button type="button" className="btn btn-sm" onClick={() => submit()}>Thử lại</button>
               </div>
             </div>
           )}
@@ -155,7 +165,9 @@ export const SingleWorkspace: React.FC = () => {
             </div>
           )}
 
-          {response && !loading && (
+          {response && !loading && tungBuoc && response.giai_thich && <StepsView response={response} />}
+
+          {response && !loading && !(tungBuoc && response.giai_thich) && (
             <>
               <PipelineView response={response} />
               <button type="button" className="btn btn-ghost chi-tiet-toggle" aria-expanded={chiTiet}

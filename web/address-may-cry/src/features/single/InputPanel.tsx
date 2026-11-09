@@ -11,17 +11,27 @@ const SAMPLES = [
   { label: 'Địa chỉ nông thôn có thôn', value: 'Thôn 4, Xã Hoằng Lộc, Huyện Hoằng Hóa, Tỉnh Thanh Hóa' },
 ];
 
+// Ví dụ cho chế độ "Xem từng bước": bấm là chạy luôn. Tự đặt, không lấy từ tập test.
+const SAMPLES_TRINH_BAY = [
+  { label: 'Gõ tắt, không dấu, không dấu phẩy', value: 'so 12 ngo 5 tran thai tong cau giay hn' },
+  { label: 'Ghi theo địa giới cũ (phường, quận cũ)', value: 'Số 10 Lê Lợi, Phường Bến Nghé, Quận 1, TP Hồ Chí Minh' },
+  { label: 'Ca hệ thống còn sai: chọn nhầm phường', value: '12 ngo 5 tran thai tong p dich vong hau q cau giay hn' },
+];
+
 interface InputPanelProps {
   value: string;
   onChange: (v: string) => void;
-  onSubmit: () => void;
+  onSubmit: (text?: string) => void;
   loading: boolean;
   elapsed: number;
   error: string | null;
+  tungBuoc: boolean;
+  onTungBuoc: (v: boolean) => void;
 }
 
-export function InputPanel({ value, onChange, onSubmit, loading, elapsed, error }: InputPanelProps) {
+export function InputPanel({ value, onChange, onSubmit, loading, elapsed, error, tungBuoc, onTungBuoc }: InputPanelProps) {
   const ref = useRef<HTMLTextAreaElement | null>(null);
+  const mau = tungBuoc ? SAMPLES_TRINH_BAY : SAMPLES;
 
   const paste = async () => {
     try {
@@ -90,17 +100,30 @@ export function InputPanel({ value, onChange, onSubmit, loading, elapsed, error 
             </button>
           )}
         </div>
+
+        <label className="mode-switch">
+          <input type="checkbox" checked={tungBuoc} onChange={(e) => onTungBuoc(e.target.checked)} />
+          <span>
+            <strong>Xem từng bước xử lý</strong>
+            <span>Hiện lần lượt từng bước bên trong hệ thống, dùng khi trình bày.</span>
+          </span>
+        </label>
       </form>
 
       <div className="samples">
-        <h3 className="sub-title">Thử với ví dụ mẫu</h3>
+        <h3 className="sub-title">{tungBuoc ? 'Ví dụ để trình bày (bấm là chạy)' : 'Thử với ví dụ mẫu'}</h3>
         <ul className="sample-list">
-          {SAMPLES.map((s) => (
+          {mau.map((s) => (
             <li key={s.label}>
               <button
                 type="button"
                 className="sample-btn"
-                onClick={() => { onChange(s.value); ref.current?.focus(); }}
+                disabled={loading}
+                onClick={() => {
+                  onChange(s.value);
+                  if (tungBuoc) onSubmit(s.value);
+                  else ref.current?.focus();
+                }}
               >
                 <span className="sample-label">{s.label}</span>
                 <span className="sample-value">{s.value}</span>

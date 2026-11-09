@@ -1,0 +1,133 @@
+/* ===== Xem từng bước (chế độ trình bày) ===== */
+.steps { display: grid; gap: var(--space-3); min-width: 0; }
+.steps-head { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--space-3); flex-wrap: wrap; }
+.steps-input { margin: 4px 0 0; color: var(--muted); font-size: var(--fs-sm); overflow-wrap: anywhere; }
+.steps-controls { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; }
+.steps-progress { color: var(--muted); font-size: var(--fs-sm); min-width: 3.5em; text-align: right; }
+.steps-hint { margin: 0; }
+.steps-hint kbd, .steps kbd {
+  font-family: var(--font-mono); font-size: var(--fs-xs); padding: 1px 6px;
+  border: 1px solid var(--border-strong); border-bottom-width: 2px; border-radius: 4px; background: var(--raised);
+}
+
+.step-list { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-3); }
+.step {
+  display: grid; grid-template-columns: auto 1fr; gap: var(--space-3);
+  padding: var(--space-4); border: 1px solid var(--border); border-radius: var(--radius-card); background: var(--surface);
+  animation: step-in var(--duration-normal) var(--ease-standard);
+  min-width: 0;
+}
+@keyframes step-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.step-n {
+  width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center;
+  background: var(--active); color: var(--text); font-weight: 700; font-size: var(--fs-sm);
+}
+.step.is-result { border-color: var(--link); background: var(--accent-light); }
+.step.is-result .step-n { background: var(--link); color: var(--surface); }
+.step-body { min-width: 0; display: grid; gap: var(--space-2); }
+.step-title { display: flex; align-items: center; gap: var(--space-2) var(--space-3); flex-wrap: wrap; }
+.step-title h3 { margin: 0; font-size: var(--fs-md); }
+.step-file {
+  font-family: var(--font-mono); font-size: var(--fs-xs); color: var(--faint);
+  background: var(--raised); border: 1px solid var(--border); border-radius: 4px; padding: 1px 6px; overflow-wrap: anywhere;
+}
+.step-desc { margin: 0; color: var(--muted); font-size: var(--fs-sm); max-width: 72ch; }
+.step-visual { min-width: 0; margin-top: var(--space-1); }
+.step-visual .hl-string { margin: 0; }
+.step-empty { margin: 0; color: var(--faint); font-style: italic; font-size: var(--fs-sm); }
+
+/* Bước 1: các từ */
+.token-row { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+.token {
+  display: inline-flex; align-items: baseline; gap: 5px; padding: 3px 9px;
+  border: 1px solid var(--border-strong); border-radius: var(--radius-small); background: var(--raised);
+  font-family: var(--font-mono); font-size: var(--fs-sm);
+}
+.token-i { font-size: 0.625rem; color: var(--faint); }
+
+/* Bước 3: bảng ứng viên */
+.table-wrap { overflow-x: auto; overscroll-behavior-x: contain; }
+.steps-table { width: 100%; border-collapse: collapse; font-size: var(--fs-sm); }
+.steps-table th { text-align: left; font-weight: 600; color: var(--muted); padding: 6px 10px; border-bottom: 1px solid var(--border-strong); white-space: nowrap; }
+.steps-table td { padding: 7px 10px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+.steps-table tr.is-first td { border-top: 1px solid var(--border); }
+.steps-table .num { text-align: right; }
+.steps-table .kind-tag { font-size: var(--fs-xs); padding: 1px 7px; }
+.moc { color: var(--faint); font-size: var(--fs-xs); }
+
+/* Bước 4: phễu số lượng */
+.funnel { --funnel-gap: 22px; list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-2) var(--funnel-gap); }
+.funnel li {
+  display: grid; gap: 2px; padding: var(--space-3); text-align: center;
+  border: 1px solid var(--border); border-radius: var(--radius-control); background: var(--raised); position: relative;
+}
+.funnel li + li::before {
+  content: '→'; position: absolute; left: calc(-1 * var(--funnel-gap) / 2); top: 50%;
+  transform: translate(-50%, -50%); color: var(--faint); font-size: var(--fs-sm);
+}
+.funnel strong { font-size: var(--fs-lg); font-variant-numeric: tabular-nums; }
+.funnel span { font-size: var(--fs-xs); color: var(--muted); }
+
+/* Bước 5: giả thuyết */
+.hyp-list { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-2); }
+.hyp { padding: var(--space-3); border: 1px solid var(--border); border-radius: var(--radius-control); background: var(--surface); display: grid; gap: 6px; }
+.hyp.is-top { border-color: var(--positive); }
+.hyp-head { display: flex; align-items: center; gap: var(--space-2); }
+.hyp-rank { font-weight: 700; color: var(--muted); }
+.hyp-score { margin-left: auto; font-size: var(--fs-sm); }
+.hyp-bar { height: 6px; border-radius: 3px; background: var(--active); overflow: hidden; }
+.hyp-bar span { display: block; height: 100%; background: var(--faint); border-radius: 3px; transition: width var(--duration-normal) var(--ease-standard); }
+.hyp.is-top .hyp-bar span { background: var(--positive); }
+.hyp-units { display: flex; flex-wrap: wrap; gap: 6px; }
+.hyp-left { margin: 0; font-size: var(--fs-sm); color: var(--negative); }
+.hyp-left del { text-decoration-thickness: 1px; }
+
+.unit-chip {
+  display: inline-flex; align-items: baseline; gap: 6px; flex-wrap: wrap; padding: 3px 9px;
+  border-radius: var(--radius-small); border: 1px solid var(--border-strong); font-size: var(--fs-sm); max-width: 100%;
+}
+.unit-name { font-weight: 600; overflow-wrap: anywhere; }
+.unit-src { font-family: var(--font-mono); font-size: var(--fs-xs); opacity: 0.8; }
+.unit-moc { font-size: 0.6875rem; font-weight: 600; padding: 0 5px; border-radius: 3px; border: 1px solid currentColor; opacity: 0.75; }
+.unit-chip[data-kind="xa"] { background: var(--k-xa-bg); color: var(--k-xa-ink); }
+.unit-chip[data-kind="huyen"] { background: var(--k-huyen-bg); color: var(--k-huyen-ink); }
+.unit-chip[data-kind="tinh"] { background: var(--k-tinh-bg); color: var(--k-tinh-ink); }
+
+/* Bước 6: đổi tên đường */
+.change-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.change-list li { display: flex; align-items: baseline; gap: var(--space-2); flex-wrap: wrap; }
+.change-label { font-size: var(--fs-xs); color: var(--muted); min-width: 6.5em; }
+.change-before { color: var(--muted); text-decoration: line-through; text-decoration-thickness: 1px; }
+.change-arrow { color: var(--faint); }
+.change-after { font-weight: 650; }
+
+/* Bước 7: chuyển đổi cũ -> mới */
+.convert-list { display: grid; gap: var(--space-2); }
+.convert { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: var(--space-3); align-items: start; }
+.convert-col { min-width: 0; padding: var(--space-3); border: 1px solid var(--border); border-radius: var(--radius-control); background: var(--raised); }
+.convert-col h4 { margin: 0 0 8px; font-size: var(--fs-xs); font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+.convert-col ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.convert-arrow { align-self: center; font-size: var(--fs-lg); color: var(--faint); }
+.split-note {
+  margin-top: 8px; padding: 8px 10px; border-radius: var(--radius-control);
+  background: var(--pill-warning-bg); color: var(--pill-warning-ink); font-size: var(--fs-sm);
+}
+.split-note ul { margin-top: 4px; padding-left: 0; }
+.split-note li::before { content: '• '; }
+
+/* Kết quả */
+.result-line { margin: 0; font-size: var(--fs-lg); font-weight: 650; overflow-wrap: anywhere; }
+
+/* Bật chế độ */
+.mode-switch { display: flex; align-items: flex-start; gap: 10px; margin-top: var(--space-3); padding: var(--space-3); border: 1px solid var(--border); border-radius: var(--radius-control); background: var(--raised); cursor: pointer; }
+.mode-switch input { width: 18px; height: 18px; margin-top: 2px; accent-color: var(--link); flex: none; }
+.mode-switch strong { display: block; font-size: var(--fs-sm); }
+.mode-switch span { display: block; font-size: var(--fs-xs); color: var(--muted); }
+
+@media (max-width: 640px) {
+  .funnel { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .funnel li:nth-child(3)::before { display: none; }
+  .convert { grid-template-columns: minmax(0, 1fr); }
+  .convert-arrow { transform: rotate(90deg); justify-self: center; }
+  .step { grid-template-columns: minmax(0, 1fr); }
+}

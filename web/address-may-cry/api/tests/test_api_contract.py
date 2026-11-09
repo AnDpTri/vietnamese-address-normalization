@@ -125,6 +125,43 @@ def test_normalize_real_pipeline(base_url):
     print(f"   [PASS] Chuẩn hóa thực khớp 100% pipeline: dia_chi_chuan='{api_result['dia_chi_chuan']}' ({payload['elapsed_ms']}ms)")
 
 
+def test_normalize_giai_thich(base_url):
+    print("2b. Kiểm tra chế độ xem từng bước (giai_thich)...")
+    dia_chi = "Số 10 Lê Lợi, Phường Bến Nghé, Quận 1, TP Hồ Chí Minh"
+
+    # Mặc định không gửi các bước trung gian
+    status, _, body = http_request(f"{base_url}/api/v1/normalize", method="POST", data={"address": dia_chi})
+    assert status == 200
+    thuong = json.loads(body.decode("utf-8"))
+    assert "giai_thich" not in thuong
+
+    # Chỉ đúng giá trị true mới bật
+    status, _, body = http_request(f"{base_url}/api/v1/normalize", method="POST",
+                                   data={"address": dia_chi, "giai_thich": "true"})
+    assert "giai_thich" not in json.loads(body.decode("utf-8"))
+
+    status, _, body = http_request(f"{base_url}/api/v1/normalize", method="POST",
+                                   data={"address": dia_chi, "giai_thich": True})
+    assert status == 200
+    payload = json.loads(body.decode("utf-8"))
+    gt = payload["giai_thich"]
+
+    # Kết quả cuối giống hệt chế độ thường
+    for key in ("so_nha", "duong", "xa_phuong", "ma_xa", "tinh", "ma_tinh", "dia_chi_chuan"):
+        assert payload["result"][key] == thuong["result"][key], f"Lệch trường {key} khi bật giai_thich"
+
+    for key in ("token", "vai_tro", "ung_vien", "so_gia_thuyet", "gia_thuyet", "duong", "chuyen_doi",
+                "canh_bao_giua", "canh_bao_sau"):
+        assert key in gt, f"Thiếu bước {key}"
+    assert gt["token"], "Không có token"
+    for vt in gt["vai_tro"]:
+        assert payload["input"][vt["bat_dau"]:vt["ket_thuc"]] == vt["doan"], "Vị trí ký tự vai trò lệch chuỗi gốc"
+    assert 0 < len(gt["gia_thuyet"]) <= 3
+    assert gt["gia_thuyet"] == sorted(gt["gia_thuyet"], key=lambda g: -g["diem"]), "Giả thuyết chưa xếp theo điểm"
+    assert gt["chuyen_doi"] and all(c["tinh_moi"] and c["tinh_moi"][0]["ten"] for c in gt["chuyen_doi"])
+    print(f"   [PASS] giai_thich đủ các bước, {gt['so_gia_thuyet']} giả thuyết, kết quả không đổi.")
+
+
 def test_unicode_nfd_nfc(base_url):
     print("3. Kiểm tra bảo toàn Unicode NFD và NFC...")
     raw_nfd = unicodedata.normalize("NFD", "123 Đường Trần Hưng Đạo, Phường 1, Thành phố Cà Mau")
@@ -252,6 +289,7 @@ def main():
         print(f"Máy chủ kiểm thử đang chạy tại: {base_url}\n")
         test_health(base_url)
         test_normalize_real_pipeline(base_url)
+        test_normalize_giai_thich(base_url)
         test_unicode_nfd_nfc(base_url)
         test_validation_errors(base_url)
         test_batch_endpoint(base_url)

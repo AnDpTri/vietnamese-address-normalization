@@ -273,8 +273,9 @@ class AddressMayCryApiHandler(BaseHTTPRequestHandler):
             )
             return
 
+        giai_thich = body.get("giai_thich") is True
         try:
-            res_dict, elapsed_ms, status = eng.normalize(raw_address)
+            res_dict, elapsed_ms, status = eng.normalize(raw_address, chan_doan_buoc=giai_thich)
             chan_doan = res_dict.pop("_chan_doan", None)
             response = {
                 "input": raw_address,
@@ -284,6 +285,8 @@ class AddressMayCryApiHandler(BaseHTTPRequestHandler):
                 "thanh_phan": res_dict.get("thanh_phan", []),
                 "ket_qua_hai_dong": res_dict.get("ket_qua_hai_dong"),
             }
+            if giai_thich and chan_doan is not None:
+                response["giai_thich"] = eng.build_giai_thich(chan_doan)
             response["log_id"] = nhat_ky.ghi("chuan_hoa", {"nguon": "mot_dia_chi", "input": raw_address,
                                                              "status": status, "elapsed_ms": elapsed_ms,
                                                              "engine": eng.engine_name, "result": res_dict,

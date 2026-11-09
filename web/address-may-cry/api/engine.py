@@ -442,8 +442,61 @@ class NlpEngineAdapter:
                     phan[cap] = ten
         return ", ".join(phan[t] for t in self.THU_TU_TIEN_XU_LY if t in phan)
 
-    def normalize(self, address: str) -> Tuple[Dict[str, Any], float, str]:
+    SO_UNG_VIEN_HIEN = 3
+    SO_GIA_THUYET_HIEN = 3
+
+    def build_giai_thich(self, chan_doan: Dict[str, Any]) -> Dict[str, Any]:
+        """Rút gọn bản chẩn đoán của pipeline thành các bước để hiện trên web ("Xem từng bước").
+
+        Chỉ đọc lại những gì pipeline đã tính, không chạy thêm gì. Tên đơn vị lấy theo đúng mốc (cũ/mới).
+        """
+        txl = chan_doan.get("tien_xu_ly") or {}
+        tokens: List[str] = txl.get("token") or []
+
+        def doan(tk: List[int]) -> str:
+            return " ".join(tokens[tk[0]:tk[1]]) if tk else ""
+
+        def don_vi(u: Dict[str, Any]) -> Dict[str, Any]:
+            return {"cap": u.get("cap"), "ma": u.get("ma"), "moc": u.get("cay"), "ten": u.get("ten"),
+                    "doan": doan(u.get("token") or []), "kieu_khop": u.get("kieu_khop"), "diem": u.get("diem")}
+
+        vai_tro = [{"truong": c["truong"], "doan": c["doan"], "bat_dau": c["ky_tu"][0], "ket_thuc": c["ky_tu"][1]}
+                   for c in txl.get("crf") or []]
+        ung_vien = [{"doan": nhom["doan"], "so_ung_vien": nhom["so_ung_vien"],
+                     "top": [don_vi(u) for u in nhom["top"][:self.SO_UNG_VIEN_HIEN]]}
+                    for nhom in txl.get("ung_vien") or []]
+        gia_thuyet = [{"diem": g["diem"], "moc": g["cay"], "don_vi": [don_vi(u) for u in g["don_vi"]],
+                       "chua_phan_loai": " ".join(tokens[i] for i in g.get("chua_phan_loai") or [] if i < len(tokens))}
+                      for g in (txl.get("gia_thuyet") or [])[:self.SO_GIA_THUYET_HIEN]]
+        duong = [{"truong": k, "truoc": v["truoc"], "sau": v["sau"]}
+                 for k, v in (txl.get("khoi_phuc_duong") or {}).items() if k != "phan_chua_phan_loai"]
+
+        chuyen_doi = []
+        for cach in chan_doan.get("chuyen_doi") or []:
+            chuyen_doi.append({
+                "cu": [{"cap": cap, "ma": ma, "moc": moc, "ten": self._ten_hanh_chinh(cap, ma, moc)}
+                       for cap, ma, moc in cach["don_vi"]],
+                "xa_moi": [{"ma": ma, "ten": self._ten_hanh_chinh("xa", ma, "moi")} for ma in cach["xa_moi"]],
+                "tinh_moi": [{"ma": ma, "ten": self._ten_hanh_chinh("tinh", ma, "moi")} for ma in cach["tinh_moi"]],
+            })
+
+        return {
+            "token": tokens,
+            "vai_tro": vai_tro,
+            "ung_vien": ung_vien,
+            "so_gia_thuyet": txl.get("so_gia_thuyet", 0),
+            "so_gia_thuyet_gan": txl.get("so_gia_thuyet_gan", 0),
+            "gia_thuyet": gia_thuyet,
+            "duong": duong,
+            "chuyen_doi": chuyen_doi,
+            "canh_bao_giua": txl.get("canh_bao_giua") or [],
+            "canh_bao_sau": txl.get("canh_bao_sau") or [],
+        }
+
+    def normalize(self, address: str, chan_doan_buoc: bool = False) -> Tuple[Dict[str, Any], float, str]:
         """Chuẩn hóa một địa chỉ đơn.
+
+        chan_doan_buoc=True: luôn lấy các bước trung gian (dùng cho chế độ "Xem từng bước"), bỏ qua cache.
 
         Returns:
             Tuple[Dict[str, Any], float, str]:
@@ -457,7 +510,8 @@ class NlpEngineAdapter:
         t0 = time.perf_counter()
         # Cache theo đúng chuỗi gốc (không chuẩn hóa khoảng trắng, vì vị trí ký tự trong dau_vet phụ thuộc chuỗi).
         # Chế độ nhật ký (AMC_LOG=1) bỏ qua cache để luôn có các bước trung gian.
-        dung_cache = CACHE_TOI_DA > 0 and os.environ.get("AMC_LOG") != "1"
+        lay_chan_doan = chan_doan_buoc or os.environ.get("AMC_LOG") == "1"
+        dung_cache = CACHE_TOI_DA > 0 and not lay_chan_doan
         if dung_cache:
             with self._cache_lock:
                 muc = self._cache.get(address)
@@ -470,8 +524,9 @@ class NlpEngineAdapter:
 
         chan_doan = None
         with self._lock:
-            # Khi bật nhật ký phát triển (AMC_LOG=1), lấy kèm các bước trung gian; kết quả giống hệt chuan_hoa.
-            if os.environ.get("AMC_LOG") == "1":
+            # Khi bật nhật ký phát triển (AMC_LOG=1) hoặc xem từng bước, lấy kèm các bước trung gian;
+            # kết quả giống hệt chuan_hoa.
+            if lay_chan_doan:
                 res, chan_doan = self._pipe.chuan_hoa_chan_doan(address)
             else:
                 res = self._pipe.chuan_hoa(address)
@@ -479,7 +534,7 @@ class NlpEngineAdapter:
 
         res_dict = asdict(res)
         if chan_doan is not None:
-            res_dict["_chan_doan"] = chan_doan  # server tách ra ghi log, không gửi cho client
+            res_dict["_chan_doan"] = chan_doan  # server tách ra ghi log; chỉ gửi bản rút gọn (giai_thich) khi client xin
 
         # Xây dựng thanh_phan và ket_qua_hai_dong
         thanh_phan = self.build_thanh_phan(address, res_dict)

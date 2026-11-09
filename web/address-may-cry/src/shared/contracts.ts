@@ -68,6 +68,35 @@ export interface ApiError {
   message: string;
 }
 
+/** Một đơn vị hành chính trong các bước trung gian. moc: 'cu' (trước 01/07/2025) hoặc 'moi'. */
+export interface DonViBuoc {
+  cap: string;
+  ma: string;
+  moc: string;
+  ten: string;
+  doan?: string;
+  kieu_khop?: string;
+  diem?: number;
+}
+
+/** Các bước trung gian, chỉ có khi gửi giai_thich: true ("Xem từng bước"). */
+export interface GiaiThich {
+  token: string[];
+  vai_tro: { truong: string; doan: string; bat_dau: number; ket_thuc: number }[];
+  ung_vien: { doan: string; so_ung_vien: number; top: DonViBuoc[] }[];
+  so_gia_thuyet: number;
+  so_gia_thuyet_gan: number;
+  gia_thuyet: { diem: number; moc: string; don_vi: DonViBuoc[]; chua_phan_loai: string }[];
+  duong: { truong: string; truoc: string; sau: string }[];
+  chuyen_doi: {
+    cu: DonViBuoc[];
+    xa_moi: { ma: string; ten: string }[];
+    tinh_moi: { ma: string; ten: string }[];
+  }[];
+  canh_bao_giua: string[];
+  canh_bao_sau: string[];
+}
+
 export interface NormalizeResponse {
   input: string;
   result: AddressResult;
@@ -76,6 +105,7 @@ export interface NormalizeResponse {
   thanh_phan?: ThanhPhan[];
   ket_qua_hai_dong?: KetQuaHaiDong;
   log_id?: string | null;
+  giai_thich?: GiaiThich;
 }
 
 export interface BatchInput {
