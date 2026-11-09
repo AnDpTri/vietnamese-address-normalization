@@ -96,6 +96,15 @@ export const SingleWorkspace: React.FC = () => {
 
   const showEmpty = !response && !loading && !error;
 
+  // Chế độ trình bày: chỉ còn các bước, ẩn ô nhập, lịch sử và phần giới thiệu để vừa một màn hình
+  if (response && !loading && tungBuoc && response.giai_thich) {
+    return (
+      <div className="single-page is-present">
+        <StepsView response={response} onDoiDiaChi={() => setResponse(null)} />
+      </div>
+    );
+  }
+
   return (
     <div className="single-page">
       <div className="page-intro">
@@ -165,9 +174,7 @@ export const SingleWorkspace: React.FC = () => {
             </div>
           )}
 
-          {response && !loading && tungBuoc && response.giai_thich && <StepsView response={response} />}
-
-          {response && !loading && !(tungBuoc && response.giai_thich) && (
+          {response && !loading && (
             <>
               <PipelineView response={response} />
               <button type="button" className="btn btn-ghost chi-tiet-toggle" aria-expanded={chiTiet}
