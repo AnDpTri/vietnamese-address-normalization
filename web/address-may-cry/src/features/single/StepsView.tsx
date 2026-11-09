@@ -191,32 +191,120 @@ function BuocChuyenDoi({ g }: { g: GiaiThich }) {
   );
 }
 
-interface BuocDef { tieu_de: string; mo_ta: string; tep: string; noi_dung: React.ReactNode }
+interface CongNghe { ten: string[]; lam_gi: string; vao: string; ra: string; vi_sao: string }
+interface BuocDef {
+  tieu_de: string; mo_ta: string; tep: string; module: 1 | 2; cong_nghe: CongNghe; noi_dung: React.ReactNode;
+}
+
+/** Thẻ công nghệ của một bước: dùng gì, làm gì, nhận gì, trả gì, vì sao chọn. */
+function TheCongNghe({ c }: { c: CongNghe }) {
+  return (
+    <aside className="tech" aria-label="Công nghệ dùng ở bước này">
+      <ul className="tech-tags">
+        {c.ten.map((t) => <li key={t}>{t}</li>)}
+      </ul>
+      <dl className="tech-grid">
+        <dt>Làm gì</dt><dd>{c.lam_gi}</dd>
+        <dt>Đầu vào</dt><dd>{c.vao}</dd>
+        <dt>Đầu ra</dt><dd>{c.ra}</dd>
+        <dt>Vì sao chọn</dt><dd>{c.vi_sao}</dd>
+      </dl>
+    </aside>
+  );
+}
 
 function dsBuoc(r: NormalizeResponse, g: GiaiThich): BuocDef[] {
   return [
-    { tieu_de: 'Tách từ', tep: 'src/tien_xu_ly/tien_xu_ly.py',
+    { tieu_de: 'Tách từ', tep: 'src/tien_xu_ly/tien_xu_ly.py', module: 1,
       mo_ta: 'Cắt chuỗi thành từng từ, tách dấu câu và chữ dính số (ví dụ “P.5” thành “P”, “5”).',
+      cong_nghe: {
+        ten: ['Luật tách từ (regex)', 'Unicode NFC'],
+        lam_gi: 'Đưa chữ về một dạng Unicode thống nhất rồi cắt thành từ, giữ vị trí của từng từ trong chuỗi gốc.',
+        vao: 'Chuỗi địa chỉ người dùng gõ.',
+        ra: 'Danh sách từ, mỗi từ kèm vị trí ký tự bắt đầu và kết thúc.',
+        vi_sao: 'Giữ vị trí gốc để các bước sau tô màu và truy vết đúng chỗ người dùng gõ. Việc này dùng luật là đủ, không cần mô hình.',
+      },
       noi_dung: <BuocTachTu g={g} /> },
-    { tieu_de: 'Mô hình đoán vai trò từng chữ', tep: 'src/tien_xu_ly/char_cnn.py · Char-CNN + CRF',
+    { tieu_de: 'Mô hình đoán vai trò từng chữ', tep: 'src/tien_xu_ly/char_cnn.py', module: 1,
       mo_ta: 'Mạng CNN đọc từng ký tự, lớp CRF chọn chuỗi nhãn hợp lệ. Đây mới là dự đoán ban đầu, các bước sau có thể sửa lại.',
+      cong_nghe: {
+        ten: ['PyTorch', 'Char-CNN giãn nở (dilated)', 'CRF + Viterbi', 'Gán nhãn BIO'],
+        lam_gi: 'Gán nhãn chuỗi (sequence labeling) ở mức ký tự: mỗi ký tự được gán một trong 7 vai trò (số nhà, ngõ, thôn, đường, xã, huyện, tỉnh) hoặc “không thuộc”, theo kiểu BIO (15 nhãn).',
+        vao: 'Từng ký tự của chuỗi.',
+        ra: 'Các đoạn chữ kèm vai trò, cùng điểm tin cậy của từng vai trò (đưa sang bước 5 làm đặc trưng).',
+        vi_sao: 'Đọc theo ký tự nên chịu được không dấu, viết dính, gõ sai. 6 khối tích chập giãn nở (độ giãn 1 → 32) cho mỗi ký tự “nhìn” được khoảng 250 ký tự xung quanh. CRF bảo đảm chuỗi nhãn hợp lệ. Mô hình chỉ 1,4 MB, chạy CPU. Đã thử ViDeBERTa: kém hơn 1–2 điểm và chậm hơn khoảng 2 lần, nên giữ CNN.',
+      },
       noi_dung: <ToMau chuoi={r.input} vaiTro={g.vai_tro} /> },
-    { tieu_de: 'Tra danh mục hành chính', tep: 'src/tien_xu_ly/tim_kiem.py · trie',
+    { tieu_de: 'Tra danh mục hành chính', tep: 'src/tien_xu_ly/tim_kiem.py', module: 1,
       mo_ta: 'Dò từng đoạn chữ trong danh mục cũ và mới, chấp nhận không dấu, viết tắt, sai chính tả.',
+      cong_nghe: {
+        ten: ['Trie (cây tiền tố)', 'Khoảng cách Levenshtein ≤ 1', 'Danh mục hành chính cũ + mới'],
+        lam_gi: 'Tra mọi đoạn từ liên tiếp trong cây tiền tố chứa tên tỉnh, huyện, xã (đã bỏ dấu và các dạng viết tắt). Cho phép sai một ký tự.',
+        vao: 'Danh sách từ. Danh mục: 63 tỉnh, khoảng 10.000 xã cũ; 34 tỉnh, khoảng 3.300 xã mới.',
+        ra: 'Các ứng viên: đơn vị nào, mốc cũ hay mới, khớp kiểu gì (đúng, không dấu, viết tắt, sai chính tả), điểm khớp.',
+        vi_sao: 'Tra hàng chục nghìn tên chỉ mất vài mili giây. Bước này không phụ thuộc mô hình ở bước 2 đoán đúng hay sai, nên nếu CNN đoán nhầm vai trò thì vẫn còn ứng viên đúng để các bước sau chọn.',
+      },
       noi_dung: <BuocUngVien g={g} /> },
-    { tieu_de: 'Ghép thành các cách hiểu hợp lệ', tep: 'src/tien_xu_ly/giai_ma.py · beam search',
+    { tieu_de: 'Ghép thành các cách hiểu hợp lệ', tep: 'src/tien_xu_ly/giai_ma.py', module: 1,
       mo_ta: 'Chỉ giữ những cách ghép đúng cây hành chính: xã phải thuộc huyện, huyện phải thuộc tỉnh.',
+      cong_nghe: {
+        ten: ['Beam search (độ rộng 40)', 'Ràng buộc cây hành chính'],
+        lam_gi: 'Ghép các ứng viên không chồng lấn nhau thành một “cách hiểu” hoàn chỉnh (tỉnh, huyện, xã), chỉ giữ cách ghép mà cấp dưới thực sự thuộc cấp trên.',
+        vao: 'Các ứng viên từ bước 3.',
+        ra: 'Danh sách giả thuyết hợp lệ.',
+        vi_sao: 'Số cách ghép tăng theo cấp số nhân. Beam search mỗi bước chỉ giữ 40 nhánh tốt nhất nên vẫn nhanh. Ràng buộc cây loại ngay các tên trùng ở nơi khác (cả nước có nhiều xã cùng tên).',
+      },
       noi_dung: <BuocGhep g={g} /> },
-    { tieu_de: 'Xếp hạng, chọn cách hiểu tốt nhất', tep: 'src/tien_xu_ly/xep_hang.py · LightGBM LambdaRank',
+    { tieu_de: 'Xếp hạng, chọn cách hiểu tốt nhất', tep: 'src/tien_xu_ly/xep_hang.py', module: 1,
       mo_ta: 'Mô hình xếp hạng chấm điểm từng cách hiểu theo 28 đặc trưng. Điểm dùng để so sánh, không phải xác suất.',
+      cong_nghe: {
+        ten: ['LightGBM', 'LambdaRank (learning to rank)', '28 đặc trưng'],
+        lam_gi: 'Chấm điểm từng giả thuyết rồi xếp hạng. Đặc trưng gồm: phủ được bao nhiêu chữ, kiểu khớp, có trộn mốc cũ và mới không, có ghi tiền tố “P.”, “Q.” không, điểm vai trò từ CNN… Sau đó gom các cách hiểu điểm sát nhau; nếu chúng chỉ ra nhiều xã khác nhau thì không khẳng định.',
+        vao: 'Danh sách giả thuyết từ bước 4.',
+        ra: 'Giả thuyết được chọn và các cách hiểu ngang điểm với nó.',
+        vi_sao: 'LambdaRank học trực tiếp thứ tự đúng/sai giữa các giả thuyết, đúng với bài toán “chọn một trong nhiều”. LightGBM nhẹ, nhanh trên CPU và xem được đặc trưng nào quan trọng. Cố ý không đưa mã địa phương vào đặc trưng để mô hình không học thuộc địa danh.',
+      },
       noi_dung: <BuocXepHang g={g} /> },
-    { tieu_de: 'Chuẩn hóa tên đường', tep: 'src/tien_xu_ly/chuan_ten_duong.py',
+    { tieu_de: 'Chuẩn hóa tên đường', tep: 'src/tien_xu_ly/chuan_ten_duong.py', module: 1,
       mo_ta: 'Đưa tên đường gõ không dấu hoặc sai về đúng tên trong từ điển đường.',
+      cong_nghe: {
+        ten: ['Từ điển tên đường theo tỉnh', 'Khớp không dấu'],
+        lam_gi: 'Tra tên đường trong từ điển của đúng tỉnh vừa chọn để thêm dấu, mở rộng viết tắt, viết hoa đúng.',
+        vao: 'Đoạn chữ được nhận là đường, cùng tỉnh đã chọn ở bước 5.',
+        ra: 'Tên đường đã chuẩn, kèm cảnh báo nếu tên chỉ là đoán.',
+        vi_sao: 'Tên đường là tập mở, không có danh mục chính thức. Vì vậy chỉ đổi khi trong tỉnh có đúng một kết quả, không sửa dấu người dùng đã gõ, và luôn cảnh báo khi phải đoán.',
+      },
       noi_dung: <BuocDuong g={g} /> },
-    { tieu_de: 'Chuyển sang đơn vị hành chính mới', tep: 'src/chuyen_doi/doi_chieu.py',
+    { tieu_de: 'Chuyển sang đơn vị hành chính mới', tep: 'src/chuyen_doi/doi_chieu.py', module: 2,
       mo_ta: 'Tra bảng đối chiếu cũ → mới theo mốc 01/07/2025. Xã cũ bị chia mà thiếu bằng chứng thì để trống, không đoán.',
+      cong_nghe: {
+        ten: ['Tra bảng đối chiếu', 'Không dùng học máy'],
+        lam_gi: 'Đổi tỉnh, xã cũ sang tỉnh, xã mới theo bảng đối chiếu (khoảng 10.500 dòng). Xã cũ bị chia thì thử phân giải theo tên đường (bảng 197 dòng).',
+        vao: 'Địa chỉ đã làm sạch ở module 1, theo mốc người dùng ghi.',
+        ra: 'Mã và tên xã, tỉnh mới; hoặc để trống kèm danh sách ứng viên.',
+        vi_sao: 'Việc đổi địa giới do nhà nước quy định, tra bảng thì chắc chắn đúng, không có gì để mô hình “học”. Tách riêng module này nên đo được riêng từng phần và cập nhật bảng không cần train lại.',
+      },
       noi_dung: <BuocChuyenDoi g={g} /> },
   ];
+}
+
+/** Tổng quan hai module ở đầu chế độ xem từng bước. */
+function TongQuan() {
+  return (
+    <ol className="arch" aria-label="Kiến trúc hệ thống">
+      <li>
+        <span className="arch-tag">Module 1 · Tiền xử lý · bước 1–6</span>
+        <strong>Chuỗi bẩn → địa chỉ sạch có cấu trúc</strong>
+        <span>PyTorch (Char-CNN + CRF) · Trie · Beam search · LightGBM LambdaRank · Từ điển đường</span>
+      </li>
+      <li className="arch-arrow" aria-hidden="true">→</li>
+      <li>
+        <span className="arch-tag">Module 2 · Chuyển đổi · bước 7</span>
+        <strong>Địa chỉ cũ → địa chỉ mới (01/07/2025)</strong>
+        <span>Tra bảng đối chiếu, không học máy</span>
+      </li>
+    </ol>
+  );
 }
 
 export function StepsView({ response }: { response: NormalizeResponse }) {
@@ -266,6 +354,7 @@ export function StepsView({ response }: { response: NormalizeResponse }) {
         </div>
       </div>
       <p className="muted-note steps-hint">Mẹo khi trình bày: bấm phím <kbd>→</kbd> để sang bước tiếp, <kbd>←</kbd> để lùi.</p>
+      <TongQuan />
 
       <ol className="step-list">
         {buoc.slice(0, hien).map((b, i) => (
@@ -274,9 +363,12 @@ export function StepsView({ response }: { response: NormalizeResponse }) {
             <div className="step-body">
               <div className="step-title">
                 <h3>{b.tieu_de}</h3>
+                <span className="step-module" data-module={b.module}>Module {b.module}</span>
                 <code className="step-file">{b.tep}</code>
               </div>
               <p className="step-desc">{b.mo_ta}</p>
+              <TheCongNghe c={b.cong_nghe} />
+              <h4 className="step-out">Đầu ra với địa chỉ này</h4>
               <div className="step-visual">{b.noi_dung}</div>
             </div>
           </li>
