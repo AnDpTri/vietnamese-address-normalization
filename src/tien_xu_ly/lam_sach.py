@@ -151,6 +151,50 @@ def gia_thuyet_mo_rong_nhat_quan(chon, ranked, dm, crf_context):
     return None
 
 
+def gia_thuyet_don_vi_day_du_hon(chon, ranked, crf_context):
+    """Giả thuyết giữ nguyên các đơn vị của giả thuyết đã chọn, chỉ thay một hay nhiều đơn vị bằng đơn vị CÙNG cấp,
+    CÙNG mốc, CÙNG điểm đầu (hoặc cuối), khớp đúng tên (không sai chính tả, không qua tên cũ) trên đoạn dài hơn, toàn
+    chữ người dùng gõ, được mạng nhận diện gán là hành chính, và để lại ÍT chữ chưa phân loại hơn (tập con thật sự).
+    Ví dụ 'p dich vong hau q cau giay': 'Dịch Vọng Hậu' giải thích cả chữ 'hau' mà 'Dịch Vọng' bỏ rơi. Ranker không
+    thấy bằng chứng này: đặc trưng chỉ đếm số đơn vị, loại khớp và tổng chữ chưa hiểu, không so độ dài đoạn khớp
+    giữa hai đơn vị thay nhau, và hai cách thường ra cùng mã lúc train."""
+    char_spans = getattr(crf_context, 'char_spans', None)
+    records = getattr(crf_context, 'records', None)
+    if not char_spans or not records:
+        return None
+    crf_hc = _token_crf_hanh_chinh(crf_context)
+
+    def khoa(u):
+        return (u.bat_dau, u.ket_thuc, u.ma, u.cay)
+
+    def chi_chu(u):  # đoạn toàn chữ/số, không dấu câu chen giữa (dấu phẩy ngăn hai đơn vị khác nhau)
+        return u.ket_thuc <= len(records) and all(
+            any(c.isalnum() for c in records[i].chu) for i in range(u.bat_dau, u.ket_thuc))
+
+    goc = chon[1].ung_vien
+    goc_khoa = {khoa(u) for u in goc}
+    chua_goc = set(chon[4])
+    for item in ranked:
+        path = item[1]
+        if path is chon[1] or len(path.ung_vien) != len(goc) or not set(item[4]) < chua_goc:
+            continue
+        khoa_moi = {khoa(u) for u in path.ung_vien}
+        moi = [u for u in path.ung_vien if khoa(u) not in goc_khoa]
+        cu = [u for u in goc if khoa(u) not in khoa_moi]
+        if not moi or len(moi) != len(cu):
+            continue
+        ghep = [next((u for u in cu if u.cap == v.cap and u.cay == v.cay
+                      and (u.bat_dau == v.bat_dau or u.ket_thuc == v.ket_thuc)
+                      and v.bat_dau <= u.bat_dau and u.ket_thuc <= v.ket_thuc
+                      and v.ket_thuc - v.bat_dau > u.ket_thuc - u.bat_dau), None) for v in moi]
+        if any(u is None for u in ghep) or len({id(u) for u in ghep}) != len(moi):
+            continue
+        if all(v.kieu_khop in ('chinh_xac', 'khong_dau') and not v.ten_cu and chi_chu(v)
+               and set(range(v.bat_dau, v.ket_thuc)) <= crf_hc for v in moi):
+            return item
+    return None
+
+
 def _tinh_cua_duong_di(duong_di, dm):
     provinces = None
     for u in duong_di.ung_vien:
@@ -222,6 +266,13 @@ def _thay_bang_mo_rong_nhat_quan(close, ranked, dm, crf_context):
     thêm đúng phần đó mà không đổi mã kết quả thì dùng nó làm giả thuyết được chọn."""
     mo_rong = gia_thuyet_mo_rong_nhat_quan(close[0], ranked, dm, crf_context)
     return close if mo_rong is None else [mo_rong] + close[1:]
+
+
+def _thay_bang_don_vi_day_du_hon(close, ranked, crf_context):
+    """Bước 2b. Nếu có giả thuyết dùng đơn vị khớp đúng trên đoạn dài hơn để giải thích thêm chữ người dùng gõ
+    (ranker không thấy bằng chứng này) thì dùng nó làm giả thuyết được chọn."""
+    day_du = gia_thuyet_don_vi_day_du_hon(close[0], ranked, crf_context)
+    return close if day_du is None else [day_du] + close[1:]
 
 
 def _bo_cach_hieu_giai_thich_it_hon(close, ranked):
@@ -362,6 +413,7 @@ class BoLamSach:
         close = [x for x in ranked if score - x[0] <= margin]
         close = _uu_tien_ten_hien_hanh(close)
         close = _thay_bang_mo_rong_nhat_quan(close, ranked, self.danh_muc, crf_context)
+        close = _thay_bang_don_vi_day_du_hon(close, ranked, crf_context)
         score, best, detail, spans, unknown, inferred = close[0]
         close = _bo_cach_hieu_giai_thich_it_hon(close, ranked)
         close = _them_gia_thuyet_tuong_duong(close, ranked, crf_context)
