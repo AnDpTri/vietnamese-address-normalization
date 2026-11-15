@@ -105,3 +105,9 @@ Số cũ (đo 31/10, bộ chấm cũ):
 - Tag `luu-tru/<nhánh>` trên GitHub cho mọi nhánh cũ (40 tag), kể cả các nhánh `wip/*-20261031` chứa việc dở.
 - `luu_tru/` (không lên git): các worktree cũ (vẫn dùng được), `nlp_rf_gate`, `nlp_demo`, `PhoBERT_CPU_Check_20261030`, bản chép tay refactor, và `tu_repo_20261031/` chứa báo cáo, colab, mô hình cũ, kết quả đo cũ đã gỡ khỏi repo.
 - `rieng/` (không lên git): đáp án kín (bộ khó, bộ phủ rộng), thư mục train v3, dữ liệu OSM, ViDeBERTa, venv GPU, dữ liệu tham chiếu số nhà và GIS.
+
+## 7. Cập nhật 15/11/2026 (nhánh `sua/van-de-con-lai`)
+
+- Bộ đo bất biến chốt thành file (`data/bat_bien/`), xem QUY_CHUAN mục 7. Tỷ lệ đổi mã khi thêm biến đổi vô hại: 1,70% -> 0,74% (chỉ cặp dev 1,30% -> 0,53%) sau khi gom khoảng trắng đầu vào CNN và che ghi chú/nhãn/quốc gia ở đầu-đuôi chuỗi.
+- Bộ khó (kho_bien_the_ban) đủ 6 trường 87,0% -> 89,4%, điền thừa 26 -> 5; dev_osm_that không đổi (86,8%).
+- Ranh giới thôn/xóm, đơn vị khớp dài hơn: sửa theo nguyên nhân gốc nhưng trung tính trên ba tập có nhãn. Viết tắt bỏ nguyên âm: không làm (an toàn không đạt, xem báo cáo).

@@ -14,6 +14,7 @@ from .giai_ma import tim_duong_di
 from .tach_phan_con import tach_co_dau_vet, FIELDS
 from .quy_tac import cac_tien_to, CHI_TIET, khop_tien_to
 from .phuc_hoi_duong import phuc_hoi_ten_duong, bo_duong_viet_tat_chua_giai
+from .phan_ngoai_dia_chi import che_phan_ngoai_dia_chi
 
 
 def _tao_dau_vet(records, chuoi, a, b, **extra):
@@ -373,6 +374,9 @@ class BoLamSach:
     def tao_gia_thuyet(self, chuoi):
         if not isinstance(chuoi, str):
             raise TypeError("Địa chỉ phải là chuỗi")
+        # Nhãn "Địa chỉ:", ", Việt Nam", số điện thoại, ghi chú trong ngoặc ở đầu/đuôi được che bằng khoảng trắng cùng độ
+        # dài: vị trí ký tự giữ nguyên, mạng nhận diện không thấy ngữ cảnh khác chỉ vì có ghi chú.
+        chuoi = che_phan_ngoai_dia_chi(chuoi, self.trie)
         records = token_co_vi_tri(chuoi)
         lexical_records = records
         crf_context = self.bo_tach.chuan_bi_chuoi(chuoi) if hasattr(self.bo_tach, 'chuan_bi_chuoi') else None

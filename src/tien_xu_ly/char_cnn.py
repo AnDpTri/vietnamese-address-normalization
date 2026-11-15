@@ -18,7 +18,7 @@ from .tien_xu_ly import Token, token_co_vi_tri
 
 from .nhan import ROLES, TAGS, TAG_ID, tag_spans
 from .ngu_canh_neural import NguCanhChar
-from .tien_xu_ly import nfc_offsets
+from .tien_xu_ly import nfc_offsets, gom_khoang_trang
 
 
 
@@ -131,6 +131,7 @@ class BoTachCharCNN:
 
     def chuan_bi_chuoi(self, raw):
         text, offsets = nfc_offsets(raw)
+        text, offsets = gom_khoang_trang(text, offsets)
         if len(text) > 2048:
             raise ValueError('Bản thử giới hạn 2048 ký tự; đầu vào chưa được xử lý, không cắt ngắn')
         if not text:

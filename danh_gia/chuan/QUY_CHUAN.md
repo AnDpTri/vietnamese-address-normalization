@@ -94,3 +94,5 @@ $PY -X utf8 -B danh_gia/v3/do_bat_bien.py - - <ten>      # '-' = mô hình mặc
 ```
 
 Kết quả ở `rieng/danh_gia_chuan/bat_bien/<ten>.json`. Chỉ số: tỷ lệ cặp đổi (mã xã, mã tỉnh), trong đó đổi sang mã xã khác ("khẳng định khác"). **Số dùng để quyết định chỉ lấy trên các cặp nguồn dev** (7.218 cặp); cặp nguồn test (1.782) chỉ báo kèm, không dùng dò lỗi (cùng nguyên tắc với `test_osm_nhan_ai`). Mốc 15/11/2026 (`goc`, commit `1e4d71d`): đổi mã 1,72% tất cả, 1,30% chỉ dev; khẳng định khác nhau 0,13% / 0,07%.
+
+Mốc sau việc D (15/11/2026, `bb_d2`): đổi mã 0,74% tất cả, 0,53% chỉ dev; khẳng định khác nhau 0,06% / 0,03% (trước đó `bb_c1`: 1,70% / 1,30%; 0,13% / 0,07%). Còn lại: số điện thoại cuối câu không có ngoặc (19/1000), phẩy thành gạch (21), bỏ cách sau phẩy (18), thêm xóm đầu câu (7).

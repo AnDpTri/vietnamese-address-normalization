@@ -84,6 +84,25 @@ def tach_token(chuoi: str) -> list[str]:
     return [t.chu for t in token_co_vi_tri(chuoi)]
 
 
+def gom_khoang_trang(text, offsets):
+    """Chuẩn hóa khoảng trắng cho đầu vào mạng nhận diện: gom dãy khoảng trắng thành một dấu cách, bỏ khoảng trắng
+    đầu/cuối. Mỗi ký tự giữ offset về chuỗi gốc nên vị trí không đổi. Cùng một địa chỉ, gõ thừa dấu cách phải cho
+    mạng cùng một ngữ cảnh. (Không thêm dấu cách sau dấu phẩy: đã thử, làm 'x5,mh,ml,nd' từ để trống thành
+    khẳng định mã xã, vi phạm test_bang_chung_ngang_nhau_thi_khong_chon_bua.)"""
+    out, off = [], []
+    for i, (c, o) in enumerate(zip(text, offsets)):
+        if c.isspace():
+            if not out or out[-1] == ' ':
+                continue
+            c = ' '
+        out.append(c)
+        off.append(o)
+    while out and out[-1] == ' ':
+        out.pop()
+        off.pop()
+    return ''.join(out), off
+
+
 def nfc_offsets(raw):
     """Mỗi ký tự NFC trỏ tới cả cụm ký tự nguồn, gồm dấu phân rã."""
     chars, offsets = [], []
