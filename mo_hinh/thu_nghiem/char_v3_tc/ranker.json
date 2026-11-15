@@ -34,9 +34,9 @@
     "cu_tinh.csv": "32755d21d198951adb6cfb562a74e3d18fddc526548791c5f66f9fc4d7441ead",
     "moi_tinh.csv": "e18687784707867b3b44a70265fc37881dea5b8f41fd4f00d8b3462c6345da96",
     "cu_huyen.csv": "0e7aa37a54ffd0ac4b87dac6f2c21ca122eef97b57e730bb0a44e572d68d0d4d",
-    "cu_tinh_huyen_xa.csv": "f001bbaab0ede4148a9ec593f1c2d6a0bd3b76bc4122d9b65c8031fff2b80014",
+    "cu_tinh_huyen_xa.csv": "890e170ed9df930a7ee408d2d1c16b3f8816c31ac663eb30a1e28aa99a6808cd",
     "moi_tinh_xa.csv": "c5aac8d75ba5ad0186f789dc5cc625b2194376e871734de2b89f166f1a702ffb",
-    "doi_chieu_xa_cu_moi.csv": "42686490e40abcd2b2a38fef2c494ea6637d29e1b985c404aa9b274cff9c2218"
+    "doi_chieu_xa_cu_moi.csv": "aef7872a5369d23041800cfe678b41ec6e876bf19bd15bc40dfba7843d4c1eeb"
   },
   "close_margin": 0.05,
   "margin_calibrated": false,

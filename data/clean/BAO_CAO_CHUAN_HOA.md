@@ -14,7 +14,7 @@ Bài toán chuẩn hóa địa chỉ tự do tiếng Việt yêu cầu một cơ
 Báo cáo này mô tả chi tiết quá trình kiểm chứng độc lập, làm sạch và chuẩn hóa bộ dữ liệu hành chính từ nguồn `data\raw\` chuyển giao sang `data\clean\`, tuân thủ các nguyên tắc:
 1. **Bảo toàn nguyên trạng `data\raw`**: Không chỉnh sửa bất kỳ tệp tin nào trong thư mục raw và thư mục con `data\raw\goc\`.
 2. **Không tự suy đoán/đoán mò**: Mọi sửa đổi phải có căn cứ pháp lý và đối soát chéo từ văn bản chính thức của Nhà nước; các mâu thuẫn chưa thể đính chính chính thức được bảo lưu nguyên vẹn và ghi nhận vào bảng theo dõi (`issues.csv`, `can_xem_lai.csv`).
-3. **Bảo toàn 100% quan hệ chuyển đổi**: Bảo toàn tất cả 442 mã xã cũ có nhiều đích chuyển đổi (fan-out > 1) và toàn bộ ghi chú gốc của văn bản; không tự ý chọn một đích duy nhất.
+3. **Bảo toàn 100% quan hệ chuyển đổi**: Bảo toàn tất cả 440 mã xã cũ có nhiều đích chuyển đổi (fan-out > 1) và toàn bộ ghi chú gốc của văn bản; không tự ý chọn một đích duy nhất.
 4. **Phân tách nghiêm ngặt mốc hiệu lực**: Bộ dữ liệu chính chốt đúng mốc hiệu lực **01/07/2025**; toàn bộ các nghị quyết và điều chỉnh phát sinh trong năm 2026 được tách riêng sang tệp `thay_doi_2026.csv`.
 5. **Khả năng tái lập (Idempotent)**: Toàn bộ kết quả được tạo ra tự động bằng mã nguồn Python chuẩn (`clean_and_validate.py`) lưu tại `data\clean\scripts\`, không phụ thuộc internet và không cài thêm thư viện bên ngoài.
 
@@ -38,7 +38,7 @@ Báo cáo này mô tả chi tiết quá trình kiểm chứng độc lập, làm
   - Các Nghị quyết năm 2026: 30/2026/QH16 (Đồng Nai), 36/2026/QH16 (Quảng Ninh), 39/2026/QH16 (Bắc Ninh), 388/NQ-UBTVQH16, 237/NQ-UBTVQH16.
 
 ### 2.2. Phân định mốc thời gian
-- **Mốc 1 (Trước 01/07/2025):** Mô hình 3 cấp (Tỉnh - Huyện - Xã). Toàn quốc gồm **63 tỉnh/thành phố**, **696 quận/huyện/thị xã/thành phố thuộc tỉnh** (trong đó 691 huyện có xã trực thuộc và 5 huyện đảo đặc thù không chia cấp xã), **10.033 xã/phường/thị trấn**.
+- **Mốc 1 (Trước 01/07/2025):** Mô hình 3 cấp (Tỉnh - Huyện - Xã). Toàn quốc gồm **63 tỉnh/thành phố**, **696 quận/huyện/thị xã/thành phố thuộc tỉnh** (trong đó 691 huyện có xã trực thuộc và 5 huyện đảo đặc thù không chia cấp xã), **10.035 xã/phường/thị trấn**.
 - **Mốc 2 (Hiệu lực từ 01/07/2025):** Mô hình 2 cấp (Tỉnh - Xã). Toàn quốc sắp xếp còn **34 tỉnh/thành phố** (6 Thành phố trực thuộc TW và 28 Tỉnh) và **3.321 đơn vị cấp xã** (2.621 xã, 687 phường, 13 đặc khu).
 - **Mốc 3 (Các biến động phát sinh trong năm 2026):** Điều chỉnh nâng cấp 3 tỉnh lên thành phố trực thuộc Trung ương và nâng cấp 22 xã/thị trấn thành phường. Toàn bộ mốc này được tách biệt độc lập trong `thay_doi_2026.csv`.
 
@@ -86,10 +86,10 @@ Nhằm phục vụ tối ưu cho thuật toán tách từ và chuẩn hóa NLP:
 | `cu_tinh.csv` | 63 | 3 | Danh mục 63 tỉnh/thành phố cũ (trước 01/07/2025) | `ma_tinh` |
 | `cu_huyen.csv` | 696 | 4 | Danh mục 696 huyện cũ (gồm 5 huyện đảo không có xã) | `ma_huyen` |
 | `moi_tinh_xa.csv` | 3.321 | 6 | Danh mục 3.321 xã/phường/đặc khu mới (mốc 01/07/2025) | `ma_xa` |
-| `cu_tinh_huyen_xa.csv` | 10.033 | 7 | Danh mục 10.033 xã/phường/thị trấn cũ trước sáp nhập | `ma_xa` |
-| `doi_chieu_xa_cu_moi.csv` | 10.569 | 11 | Bảng đối chiếu chuyển đổi cũ sang mới | Cặp `(ma_xa_cu, ma_xa_moi)` |
+| `cu_tinh_huyen_xa.csv` | 10.035 | 7 | Danh mục 10.035 xã/phường/thị trấn cũ trước sáp nhập | `ma_xa` |
+| `doi_chieu_xa_cu_moi.csv` | 10.571 | 11 | Bảng đối chiếu chuyển đổi cũ sang mới | Cặp `(ma_xa_cu, ma_xa_moi)` |
 | `thay_doi_2026.csv` | 25 | 6 | Các biến động ĐVHC phát sinh trong năm 2026 | `ma` |
-| `sua_doi.csv` | 25 | 7 | Nhật ký đối soát ghi nhận các dòng sửa đổi cụ thể | - |
+| `sua_doi.csv` | 27 | 7 | Nhật ký đối soát ghi nhận các dòng sửa đổi cụ thể | - |
 | `issues.csv` | 2 | 7 | Danh sách các trường hợp ngoại lệ hợp lệ | - |
 | `can_xem_lai.csv` | 0 | 11 | Danh sách bản ghi cần xem lại (đã xử lý xong toàn bộ) | - |
 
@@ -97,7 +97,7 @@ Nhằm phục vụ tối ưu cho thuật toán tách từ và chuẩn hóa NLP:
 
 ## 5. CHI TIẾT CÁC SỬA ĐỔI, LÝ DO VÀ BẰNG CHỨNG ĐỐI SOÁT
 
-Toàn bộ 25 sửa đổi cụ thể được ghi nhận chi tiết tại `data\clean\sua_doi.csv`. Dưới đây là các nhóm vấn đề trọng yếu đã được xác minh và xử lý triệt để:
+Toàn bộ 27 sửa đổi cụ thể được ghi nhận chi tiết tại `data\clean\sua_doi.csv`. Dưới đây là các nhóm vấn đề trọng yếu đã được xác minh và xử lý triệt để:
 
 ### 5.1. Xử lý mã huyện trùng lặp 794 (Tân An) và 900 (Hà Tiên) trong `legacy-districts.json`
 - **Hiện tượng nguồn:** `legacy-districts.json` có 698 bản ghi nhưng chỉ có 696 mã duy nhất:
@@ -160,21 +160,21 @@ Toàn bộ 25 sửa đổi cụ thể được ghi nhận chi tiết tại `data
   - **85 dòng** do lỗi dấu thanh sai lệch giữa raw và clean (`Hoàng`/`Hòang`, `Khoái`/`Khóai`) $\rightarrow$ đã tự động khớp 100% sau khi sửa hàm chuẩn hóa dấu.
   - **5 dòng** do lệch kiểu dấu `Thuỷ`/`Thủy` $\rightarrow$ đã khớp 100% sau khi áp dụng chuẩn hóa dấu thanh cho `ten_xa_cu`.
   - **1 dòng** tên xã `Xa Dung` $\rightarrow$ đã khớp 100% sau khi sửa logic bóc tách loại hình xã.
-  - **2 dòng** mâu thuẫn từ bảng nguồn gốc (`01615` - Mỹ Hưng vs Hồng Quang, `02485` - Phú Thịnh vs Công Đa) $\rightarrow$ Đã được xác minh qua Nghị quyết chính thức của UBTVQH năm 2025 (NQ 1657/NQ-UBTVQH15 và NQ 1684/NQ-UBTVQH15) và xử lý dứt điểm theo Trường hợp b (xóa 2 dòng thừa gán nhầm mã, trả 2 xã cũ về đúng trạng thái "Nhập toàn bộ").
+  - **2 dòng** gán nhầm mã trong nguồn cộng đồng: Mỹ Hưng mang nhầm mã Hồng Quang, Phú Thịnh mang nhầm mã Công Đa. Sửa thành `01651` và `02482` theo `data/raw/goc/doi-chieu-2024-09-01.xls` (Sheet1 dòng 894, 1145), bổ sung hai xã vào danh mục cũ và giữ hai quan hệ nhập toàn bộ.
 
 ### 5.6. Xác minh và xử lý triệt để 2 dòng nghi vấn mâu thuẫn mã/tên (mã 01615 Cao Bằng và mã 02485 Tuyên Quang)
 - **Mã 01615 (Xã Hồng Quang / Xã Mỹ Hưng, Huyện Quảng Hòa, Tỉnh Cao Bằng):**
   - **Căn cứ pháp lý:** Nghị quyết số 1657/NQ-UBTVQH15 ngày 16/06/2025 của Ủy ban Thường vụ Quốc hội về việc sắp xếp các đơn vị hành chính cấp xã của tỉnh Cao Bằng năm 2025:
     - Khoản 39 Điều 1: "Sắp xếp toàn bộ diện tích tự nhiên, quy mô dân số của các xã Hồng Quang, Cách Linh và Bế Văn Đàn thành xã mới có tên gọi là xã Bế Văn Đàn."
     - Khoản 38 Điều 1: "Sắp xếp toàn bộ diện tích tự nhiên và quy mô dân số của thị trấn Tà Lùng, thị trấn Hòa Thuận, xã Mỹ Hưng và xã Đại Sơn thành xã mới có tên gọi là xã Phục Hòa."
-  - **Kết luận (Trường hợp b):** Dòng đối chiếu `01615 (Xã Mỹ Hưng) -> 01648 (Xã Phục Hòa)` là dòng thừa do người lập bảng `conversion-table.xlsx` gán nhầm mã `01615` của Xã Hồng Quang cho Xã Mỹ Hưng. Thực chất Xã Hồng Quang nhập toàn bộ vào Xã Bế Văn Đàn (01636), không nhập vào Xã Phục Hòa. Xã Mỹ Hưng không nằm trong danh mục 10.033 xã cũ mốc trước sáp nhập 2025 (`cu_tinh_huyen_xa.csv`).
-  - **Xử lý:** Xóa dòng thừa Mỹ Hưng sang Phục Hòa; cập nhật dòng `01615 (Xã Hồng Quang) -> 01636 (Xã Bế Văn Đàn)` từ `bi_chia` về đúng `Nhập toàn bộ`.
+  - **Kết luận:** Mỹ Hưng có mã `01651` theo nguồn Cục Thống kê (Sheet1 dòng 894), bị thiếu trong danh mục cộng đồng và bị gán nhầm mã `01615` của Hồng Quang trong bảng chuyển đổi. Giữ quan hệ `01651 → 01648`; Hồng Quang vẫn `01615 → 01636`.
+  - **Xử lý:** Bổ sung Mỹ Hưng `01651` vào danh mục xã cũ, sửa mã dòng đối chiếu sang Phục Hòa và ghi `Nhập toàn bộ`; Hồng Quang sang Bế Văn Đàn vẫn `Nhập toàn bộ`. Không xóa quan hệ.
 - **Mã 02485 (Xã Công Đa / Xã Phú Thịnh, Huyện Yên Sơn, Tỉnh Tuyên Quang):**
   - **Căn cứ pháp lý:** Nghị quyết số 1684/NQ-UBTVQH15 ngày 16/06/2025 của Ủy ban Thường vụ Quốc hội về việc sắp xếp các đơn vị hành chính cấp xã của tỉnh Tuyên Quang năm 2025:
     - Khoản 27 Điều 1: "Sắp xếp toàn bộ diện tích tự nhiên, quy mô dân số của các xã Đạo Viện, Công Đa và Trung Sơn thành xã mới có tên gọi là xã Trung Sơn."
     - Khoản 28 Điều 1: "Sắp xếp toàn bộ diện tích tự nhiên, quy mô dân số của xã Phú Thịnh, xã Tiến Bộ và một phần diện tích tự nhiên, quy mô dân số của xã Thái Bình thành xã mới có tên gọi là xã Thái Bình."
-  - **Kết luận (Trường hợp b):** Dòng đối chiếu `02485 (Xã Phú Thịnh) -> 02494 (Xã Thái Bình)` là dòng thừa do người lập bảng `conversion-table.xlsx` gán nhầm mã `02485` của Xã Công Đa cho Xã Phú Thịnh. Thực chất Xã Công Đa nhập toàn bộ vào Xã Trung Sơn (02458), không nhập vào Xã Thái Bình. Xã Phú Thịnh không nằm trong danh mục 10.033 xã cũ mốc trước sáp nhập 2025 (`cu_tinh_huyen_xa.csv`).
-  - **Xử lý:** Xóa dòng thừa Phú Thịnh sang Thái Bình; cập nhật dòng `02485 (Xã Công Đa) -> 02458 (Xã Trung Sơn)` từ `bi_chia` về đúng `Nhập toàn bộ`.
+  - **Kết luận:** Phú Thịnh có mã `02482` theo nguồn Cục Thống kê (Sheet1 dòng 1145, ghi "Đóng mã do sáp nhập vào xã Thái Bình"), bị thiếu trong danh mục cộng đồng và bị gán nhầm mã `02485` của Công Đa. Giữ quan hệ `02482 → 02494`; Công Đa vẫn `02485 → 02458`.
+  - **Xử lý:** Bổ sung Phú Thịnh `02482` vào danh mục xã cũ, sửa mã dòng đối chiếu sang Thái Bình và ghi `Nhập toàn bộ`; Công Đa sang Trung Sơn vẫn `Nhập toàn bộ`. Không xóa quan hệ.
 
 ### 5.7. Hiệu chỉnh loại hình cấp tỉnh về đúng mốc 01/07/2025 (Quảng Ninh 22, Bắc Ninh 24, Đồng Nai 75)
 - **Hiện tượng và nguyên nhân:**
@@ -189,7 +189,7 @@ Toàn bộ 25 sửa đổi cụ thể được ghi nhận chi tiết tại `data
   4. Các Nghị quyết nâng cấp 3 tỉnh lên Thành phố trực thuộc TW (`30/2026/QH16`, `36/2026/QH16`, `39/2026/QH16`) có hiệu lực trong năm 2026 và đã được tách riêng vào `thay_doi_2026.csv`.
 - **Biện pháp xử lý và kiểm soát tự động:**
   - Sửa logic sinh `moi_tinh.csv` trong `clean_and_validate.py`: Khóa cứng danh sách 6 thành phố trực thuộc Trung ương tại mốc 01/07/2025 (`01`, `31`, `46`, `48`, `79`, `92`); toàn bộ 28 đơn vị còn lại nhận `loai_tinh = 'Tỉnh'`.
-  - Ghi nhận 3 bản ghi sửa đổi vào `sua_doi.csv` (nâng tổng số lên 25 bản ghi).
+  - Ghi nhận 3 bản ghi sửa đổi vào `sua_doi.csv` (tổng hiện tại 27 bản ghi, gồm 2 bản ghi bổ sung xã cũ).
   - Bổ sung 2 kiểm tra tự động nghiêm ngặt trong `validate_all()`:
     + `moiTinhConsistency`: Kiểm tra 100% khớp `loai_tinh` và `ten_tinh` giữa `moi_tinh.csv` và `moi_tinh_xa.csv`.
     + `asOf2025CentralCities`: Kiểm tra đúng 6 Thành phố trực thuộc TW; nếu có bất kỳ tỉnh nào khác (đặc biệt 22, 24, 75) mang loại `Thành phố` thì validation lập tức nhận kết quả FAIL.
@@ -200,7 +200,7 @@ Toàn bộ 25 sửa đổi cụ thể được ghi nhận chi tiết tại `data
 
 Một yêu cầu cốt lõi của bài toán là bảo toàn toàn bộ các xã bị phân rã sang nhiều đơn vị hành chính mới để mô hình NLP có đủ căn cứ gán cờ `xa_bi_chia`:
 
-- **Tổng số mã xã cũ bị chia tách (fan-out > 1):** **440 mã xã** (sau khi xóa 2 dòng thừa gán nhầm mã của xã Mỹ Hưng và Phú Thịnh, hai xã Hồng Quang `01615` và Công Đa `02485` đã được trả về đúng trạng thái duy nhất 1 đích đến với quan hệ "Nhập toàn bộ", không còn bị đánh dấu `bi_chia` sai).
+- **Tổng số mã xã cũ bị chia tách (fan-out > 1):** **440 mã xã**. Sửa mã Mỹ Hưng và Phú Thịnh thay vì xóa dòng; cả hai xã này, Hồng Quang `01615` và Công Đa `02485` đều chỉ có một đích, với quan hệ `Nhập toàn bộ`.
 - **Tổng số dòng chuyển đổi của các xã đa đích:** **970 dòng**.
 - **Phân bổ chi tiết các ghi chú và cờ phân loại:**
   1. `bi_chia`: 823 dòng.
@@ -226,15 +226,15 @@ Báo cáo giữ nguyên tắc **không đoán mò, chỉ sửa đổi khi tìm �
 - **Văn bản pháp lý xác minh:** Nghị quyết số 1657/NQ-UBTVQH15 ngày 16/06/2025 của Ủy ban Thường vụ Quốc hội về việc sắp xếp các đơn vị hành chính cấp xã của tỉnh Cao Bằng năm 2025 (`https://thuvienphapluat.vn`).
   - **Khoản 39 Điều 1:** Sắp xếp toàn bộ diện tích tự nhiên, quy mô dân số của các xã Hồng Quang, Cách Linh và Bế Văn Đàn thành xã mới có tên gọi là xã Bế Văn Đàn.
   - **Khoản 38 Điều 1:** Sắp xếp toàn bộ diện tích tự nhiên và quy mô dân số của thị trấn Tà Lùng, thị trấn Hòa Thuận, xã Mỹ Hưng và xã Đại Sơn thành xã mới có tên gọi là xã Phục Hòa.
-- **Kết luận:** Thuộc **Trường hợp b** (Dòng thừa). Trong danh mục 10.033 xã cũ mốc 2024 (`cu_tinh_huyen_xa.csv`), mã `01615` là Xã Hồng Quang. Xã Hồng Quang sáp nhập toàn bộ vào Xã Bế Văn Đàn (01636). Dòng `01615` (Xã Mỹ Hưng) sáp nhập vào Xã Phục Hòa (01648) là do bảng tổng hợp `conversion-table.xlsx` chép tên xã Mỹ Hưng từ văn bản nhưng gán nhầm mã `01615`. Do đó dòng này là thừa, làm sai lệch cờ `bi_chia` của Xã Hồng Quang.
-- **Kết quả xử lý:** Đã xóa dòng thừa khỏi `doi_chieu_xa_cu_moi.csv`, khôi phục cờ `Nhập toàn bộ` cho Xã Hồng Quang, xóa khỏi `can_xem_lai.csv` và gỡ bỏ khỏi `issues.csv`.
+- **Kết luận:** Mỹ Hưng có mã `01651` theo nguồn Cục Thống kê (Sheet1 dòng 894), bị thiếu trong danh mục cộng đồng và bị gán nhầm mã `01615` của Hồng Quang trong bảng chuyển đổi. Giữ quan hệ `01651 → 01648`; Hồng Quang vẫn `01615 → 01636`.
+- **Xử lý:** Bổ sung Mỹ Hưng `01651` vào danh mục xã cũ, sửa mã dòng đối chiếu sang Phục Hòa và ghi `Nhập toàn bộ`; Hồng Quang sang Bế Văn Đàn vẫn `Nhập toàn bộ`. Không xóa quan hệ.
 
 ### 7.2. Xác minh Mã 02485 (Xã Công Đa / Xã Phú Thịnh - Huyện Yên Sơn, Tỉnh Tuyên Quang)
 - **Văn bản pháp lý xác minh:** Nghị quyết số 1684/NQ-UBTVQH15 ngày 16/06/2025 của Ủy ban Thường vụ Quốc hội về việc sắp xếp các đơn vị hành chính cấp xã của tỉnh Tuyên Quang năm 2025 (`https://thuvienphapluat.vn`).
   - **Khoản 27 Điều 1:** Sắp xếp toàn bộ diện tích tự nhiên, quy mô dân số của các xã Đạo Viện, Công Đa và Trung Sơn thành xã mới có tên gọi là xã Trung Sơn.
   - **Khoản 28 Điều 1:** Sắp xếp toàn bộ diện tích tự nhiên, quy mô dân số của xã Phú Thịnh, xã Tiến Bộ và một phần diện tích tự nhiên, quy mô dân số của xã Thái Bình thành xã mới có tên gọi là xã Thái Bình.
-- **Kết luận:** Thuộc **Trường hợp b** (Dòng thừa). Trong danh mục 10.033 xã cũ mốc 2024 (`cu_tinh_huyen_xa.csv`), mã `02485` là Xã Công Đa. Xã Công Đa sáp nhập toàn bộ vào Xã Trung Sơn (02458). Dòng `02485` (Xã Phú Thịnh) sáp nhập vào Xã Thái Bình (02494) là do bảng tổng hợp `conversion-table.xlsx` chép tên xã Phú Thịnh từ văn bản nhưng gán nhầm mã `02485`. Do đó dòng này là thừa, làm sai lệch cờ `bi_chia` của Xã Công Đa.
-- **Kết quả xử lý:** Đã xóa dòng thừa khỏi `doi_chieu_xa_cu_moi.csv`, khôi phục cờ `Nhập toàn bộ` cho Xã Công Đa, xóa khỏi `can_xem_lai.csv` và gỡ bỏ khỏi `issues.csv`.
+- **Kết luận:** Phú Thịnh có mã `02482` theo nguồn Cục Thống kê (Sheet1 dòng 1145, ghi "Đóng mã do sáp nhập vào xã Thái Bình"), bị thiếu trong danh mục cộng đồng và bị gán nhầm mã `02485` của Công Đa. Giữ quan hệ `02482 → 02494`; Công Đa vẫn `02485 → 02458`.
+- **Xử lý:** Bổ sung Phú Thịnh `02482` vào danh mục xã cũ, sửa mã dòng đối chiếu sang Thái Bình và ghi `Nhập toàn bộ`; Công Đa sang Trung Sơn vẫn `Nhập toàn bộ`. Không xóa quan hệ.
 
 ### 7.3. Tình trạng hiện tại của `can_xem_lai.csv` và `issues.csv`
 - `can_xem_lai.csv`: **0 bản ghi** (tất cả các dòng mâu thuẫn mã/tên đã được giải quyết dứt điểm có căn cứ pháp lý rõ ràng).
@@ -255,10 +255,10 @@ Trích xuất kết quả tự động từ tệp `data\clean\validation.json`:
     "cu_tinh_count": 63,
     "cu_huyen_count": 696,
     "moi_tinh_xa_count": 3321,
-    "cu_tinh_huyen_xa_count": 10033,
-    "doi_chieu_count": 10569,
+    "cu_tinh_huyen_xa_count": 10035,
+    "doi_chieu_count": 10571,
     "thay_doi_2026_count": 25,
-    "sua_doi_count": 25
+    "sua_doi_count": 27
   },
   "primaryKeyDuplicates": {
     "moi_tinh": { "duplicate_count": 0, "duplicate_keys": [] },
@@ -287,8 +287,8 @@ Trích xuất kết quả tự động từ tệp `data\clean\validation.json`:
   },
   "duplicateConversionPairs": 0,
   "coverage": {
-    "old_wards_total": 10033,
-    "old_wards_covered_in_doi_chieu": 10033,
+    "old_wards_total": 10035,
+    "old_wards_covered_in_doi_chieu": 10035,
     "old_wards_coverage_rate": "100.00%",
     "new_wards_total": 3321,
     "new_wards_covered_in_doi_chieu": 3321,

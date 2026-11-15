@@ -336,7 +336,7 @@ def clean_data():
         writer.writerows(moi_tinh_xa_list)
 
     # -------------------------------------------------------------
-    # 5. cu_tinh_huyen_xa.csv (10.033 xã cũ trước 01/07/2025)
+    # 5. cu_tinh_huyen_xa.csv (10.035 xã cũ trước 01/07/2025)
     # -------------------------------------------------------------
     print("[5/7] Tạo cu_tinh_huyen_xa.csv...")
     cu_tinh_huyen_xa_raw = RAW_DIR / "cu_tinh_huyen_xa.csv"
@@ -434,6 +434,26 @@ def clean_data():
                 'loai_xa': clean_wtype
             })
             
+    # Hai xã có thật bị thiếu trong danh mục cộng đồng. Mã xác minh từ
+    # doi-chieu-2024-09-01.xls của Cục Thống kê, Sheet1 dòng 894 và 1145.
+    for ma, ten, huyen, tinh, ten_tinh, ten_huyen in [
+        ('01651', 'Mỹ Hưng', '049', '04', 'Cao Bằng', 'Quảng Hòa'),
+        ('02482', 'Phú Thịnh', '075', '08', 'Tuyên Quang', 'Yên Sơn'),
+    ]:
+        vi_tri = next(i for i, r in enumerate(cu_tinh_huyen_xa_list) if r['ma_xa'] > ma)
+        cu_tinh_huyen_xa_list.insert(vi_tri, {
+            'ma_tinh': tinh, 'ten_tinh': ten_tinh,
+            'ma_huyen': huyen, 'ten_huyen': ten_huyen,
+            'ma_xa': ma, 'ten_xa': ten, 'loai_xa': 'Xã',
+        })
+        sua_doi_records.append({
+            'file': 'cu_tinh_huyen_xa.csv', 'ma': ma, 'cot': '[Bản ghi]',
+            'gia_tri_cu': '[Thiếu trong danh mục nguồn cộng đồng]',
+            'gia_tri_moi': f'{tinh},{ten_tinh},{huyen},{ten_huyen},{ma},{ten},Xã',
+            'ly_do': 'Bổ sung xã cũ bị thiếu theo mã của Cục Thống kê; bảo toàn file raw.',
+            'can_cu': 'data/raw/goc/doi-chieu-2024-09-01.xls (Sheet1 dòng 894, 1145)',
+        })
+
     cu_tinh_huyen_xa_file = CLEAN_DIR / "cu_tinh_huyen_xa.csv"
     with open(cu_tinh_huyen_xa_file, "w", encoding="utf-8", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=['ma_tinh', 'ten_tinh', 'ma_huyen', 'ten_huyen', 'ma_xa', 'ten_xa', 'loai_xa'])
@@ -470,18 +490,19 @@ def clean_data():
         t_xa_moi = raw_r['ten_xa_moi'].strip()
         ghi_chu = raw_r['ghi_chu'].strip()
         
-        # Xử lý dòng nghi vấn 1: Xóa dòng thừa Xã Mỹ Hưng (gán nhầm mã 01615 của xã Hồng Quang) nhập vào Xã Phục Hòa (01648)
-        if m_xa_cu == '01615' and m_xa_moi == '01648':
+        # Sửa mã Mỹ Hưng bị gán nhầm mã Hồng Quang trong nguồn cộng đồng.
+        if m_xa_cu == '01615' and t_xa_cu == 'Xã Mỹ Hưng' and m_huyen_cu == '049' and m_xa_moi == '01648':
             sua_doi_records.append({
                 'file': 'doi_chieu_xa_cu_moi.csv',
                 'ma': '01615 (sang 01648)',
-                'cot': '[Bản ghi]',
+                'cot': 'ma_xa_cu,ghi_chu',
                 'gia_tri_cu': '01615,Xã Mỹ Hưng,049,Huyện Quảng Hòa,04,Tỉnh Cao Bằng,01648,Xã Phục Hòa,04,Tỉnh Cao Bằng,bi_chia',
-                'gia_tri_moi': '[Đã xóa bản ghi thừa]',
-                'ly_do': 'Dòng thừa do gán nhầm mã 01615 của Xã Hồng Quang cho Xã Mỹ Hưng. Theo Khoản 39 Điều 1 NQ 1657/NQ-UBTVQH15, toàn bộ Xã Hồng Quang nhập vào Xã Bế Văn Đàn (01636), không nhập vào Xã Phục Hòa. Xã Mỹ Hưng không có trong danh mục 10.033 xã cũ mốc 2024.',
-                'can_cu': 'Nghị quyết số 1657/NQ-UBTVQH15 (Điều 1 Khoản 38 và Khoản 39); https://thuvienphapluat.vn'
+                'gia_tri_moi': '01651,Nhập toàn bộ',
+                'ly_do': 'Sửa mã gán nhầm: Mỹ Hưng có mã 01651 theo Cục Thống kê; nhập toàn bộ vào Phục Hòa. Mã 01615 thuộc Hồng Quang.',
+                'can_cu': 'data/raw/goc/doi-chieu-2024-09-01.xls (Sheet1 dòng 894); NQ 1657/NQ-UBTVQH15, Điều 1 khoản 38'
             })
-            continue
+            m_xa_cu = '01651'
+            ghi_chu = 'Nhập toàn bộ'
             
         # Khôi phục cờ ghi_chu cho Xã Hồng Quang sang Xã Bế Văn Đàn: "Nhập toàn bộ"
         if m_xa_cu == '01615' and m_xa_moi == '01636':
@@ -497,18 +518,19 @@ def clean_data():
                 })
                 ghi_chu = 'Nhập toàn bộ'
 
-        # Xử lý dòng nghi vấn 2: Xóa dòng thừa Xã Phú Thịnh (gán nhầm mã 02485 của xã Công Đa) nhập vào Xã Thái Bình (02494)
-        if m_xa_cu == '02485' and m_xa_moi == '02494':
+        # Sửa mã Phú Thịnh bị gán nhầm mã Công Đa trong nguồn cộng đồng.
+        if m_xa_cu == '02485' and t_xa_cu == 'Xã Phú Thịnh' and m_huyen_cu == '075' and m_xa_moi == '02494':
             sua_doi_records.append({
                 'file': 'doi_chieu_xa_cu_moi.csv',
                 'ma': '02485 (sang 02494)',
-                'cot': '[Bản ghi]',
+                'cot': 'ma_xa_cu,ghi_chu',
                 'gia_tri_cu': '02485,Xã Phú Thịnh,075,Huyện Yên Sơn,08,Tỉnh Tuyên Quang,02494,Xã Thái Bình,08,Tỉnh Tuyên Quang,bi_chia',
-                'gia_tri_moi': '[Đã xóa bản ghi thừa]',
-                'ly_do': 'Dòng thừa do gán nhầm mã 02485 của Xã Công Đa cho Xã Phú Thịnh. Theo Khoản 27 Điều 1 NQ 1684/NQ-UBTVQH15, toàn bộ Xã Công Đa nhập vào Xã Trung Sơn (02458), không nhập vào Xã Thái Bình. Xã Phú Thịnh không có trong danh mục 10.033 xã cũ mốc 2024.',
-                'can_cu': 'Nghị quyết số 1684/NQ-UBTVQH15 (Điều 1 Khoản 27 và Khoản 28); https://thuvienphapluat.vn'
+                'gia_tri_moi': '02482,Nhập toàn bộ',
+                'ly_do': 'Sửa mã gán nhầm: Phú Thịnh có mã 02482 theo Cục Thống kê; nhập toàn bộ vào Thái Bình. Mã 02485 thuộc Công Đa.',
+                'can_cu': 'data/raw/goc/doi-chieu-2024-09-01.xls (Sheet1 dòng 1145); NQ 1684/NQ-UBTVQH15, Điều 1 khoản 28'
             })
-            continue
+            m_xa_cu = '02482'
+            ghi_chu = 'Nhập toàn bộ'
 
         # Khôi phục cờ ghi_chu cho Xã Công Đa sang Xã Trung Sơn: "Nhập toàn bộ"
         if m_xa_cu == '02485' and m_xa_moi == '02458':

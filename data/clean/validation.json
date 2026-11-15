@@ -6,10 +6,10 @@
     "cu_tinh_count": 63,
     "cu_huyen_count": 696,
     "moi_tinh_xa_count": 3321,
-    "cu_tinh_huyen_xa_count": 10033,
-    "doi_chieu_count": 10569,
+    "cu_tinh_huyen_xa_count": 10035,
+    "doi_chieu_count": 10571,
     "thay_doi_2026_count": 25,
-    "sua_doi_count": 25
+    "sua_doi_count": 27
   },
   "primaryKeyDuplicates": {
     "moi_tinh": {
@@ -53,8 +53,8 @@
   },
   "duplicateConversionPairs": 0,
   "coverage": {
-    "old_wards_total": 10033,
-    "old_wards_covered_in_doi_chieu": 10033,
+    "old_wards_total": 10035,
+    "old_wards_covered_in_doi_chieu": 10035,
     "old_wards_coverage_rate": "100.00%",
     "new_wards_total": 3321,
     "new_wards_covered_in_doi_chieu": 3321,

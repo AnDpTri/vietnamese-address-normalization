@@ -93,7 +93,8 @@ Tất cả các tệp gốc tải về từ mạng được lưu trữ nguyên b
 ### 3.2. Cấu trúc & Quy tắc đối chiếu
 - **Quan hệ đối chiếu:**
   - **Nhập nguyên vẹn / Đổi tên / Giữ nguyên (9.598 dòng):** Mỗi xã cũ được chuyển giao toàn bộ sang đúng một xã mới. Cột `ghi_chu` mang các giá trị nguyên bản từ văn bản của UBTVQH: `Nhập toàn bộ` (9.460 dòng), `Giữ nguyên` (127 dòng), `Đổi tên` (2 dòng), `Đổi loại hình` (2 dòng), v.v.
-  - **Xã bị chia tách (973 dòng ứng với 441 xã cũ bị chia):**
+  - **Xã bị chia tách (970 dòng ứng với 440 xã cũ bị chia trong clean; raw có mã gán nhầm):**
+    - Các số phân bổ ghi chú bên dưới mô tả raw (973 dòng), trước khi sửa mã trong clean.
     - Nếu một xã cũ bị chia tách sang nhiều xã mới (fan-out > 1), mỗi cặp đối chiếu được tách thành một dòng riêng biệt.
     - Cột `ghi_chu` được gán tiền tố chuẩn hóa `bi_chia`.
     - **827 dòng** mang giá trị `bi_chia`: Đây là các trường hợp nguồn chính thức ghi chung là "Nhập một phần" mà không có mô tả chi tiết thôn/xóm trong bảng tổng hợp.
@@ -115,7 +116,7 @@ Tất cả các tệp gốc tải về từ mạng được lưu trữ nguyên b
 - **Giấy phép:** Public Domain / MIT License.
 
 ### 3.4. Điểm còn thiếu hoặc cần lưu ý cho mô hình chuẩn hóa địa chỉ
-- Đối với 441 xã cũ bị chia (973 dòng trong bảng đối chiếu):
+- Đối với 440 xã cũ bị chia (970 dòng trong bảng đối chiếu clean):
   - 58 trường hợp ghi nhận `Nhập một phần diện tích, toàn bộ dân số`: Theo phân tích nghiệp vụ dân cư (ADR-0002), các địa chỉ dân cư của xã cũ này thực tế thuộc về xã mới nhận "toàn bộ dân số".
   - Các trường hợp còn lại chỉ ghi `Nhập một phần` mà văn bản cấp Nghị quyết không số hóa ranh giới tới từng thôn/xóm trong bảng này. Khi chuẩn hóa địa chỉ gặp các xã này mà chuỗi đầu vào không có thông tin chi tiết thôn/xóm/tên đường, hệ thống cần gắn cờ cảnh báo `xa_bi_chia` và cung cấp danh sách xã mới tiềm năng theo đúng quy tắc mục 4 và 5 trong tài liệu đặc tả `bai_toan.md`.
 
@@ -128,3 +129,15 @@ Tất cả các tệp gốc tải về từ mạng được lưu trữ nguyên b
 | `moi_tinh_xa.csv` | 6 | 3.321 | UTF-8 | Đủ 34 tỉnh, 3.321 xã/phường/đặc khu, 0 dòng trống, 0 mã trùng lặp |
 | `cu_tinh_huyen_xa.csv` | 7 | 10.033 | UTF-8 | Đủ 63 tỉnh, 698 huyện, 10.033 xã/phường/thị trấn, 0 khóa ngoại mồ côi |
 | `doi_chieu_xa_cu_moi.csv` | 8 | 10.571 | UTF-8 | 10.571 cặp quan hệ duy nhất, bao phủ toàn bộ 10.033 xã cũ và 3.321 xã mới |
+
+### Hiệu chỉnh hai xã cũ trong data/clean
+
+Danh mục raw giữ nguyên 10.033 xã; clean có 10.035 xã sau khi bổ sung Mỹ Hưng
+`01651` (049, 04) và Phú Thịnh `02482` (075, 08) theo nguồn Cục Thống kê
+`goc/doi-chieu-2024-09-01.xls`, Sheet1 dòng 894 và 1145. Bảng cộng đồng
+`goc/conversion-table.xlsx` (sheet không merge, dòng 912 và 1260) gán nhầm
+mã `01615` và `02485`; script sửa mã, giữ hai quan hệ nhập toàn bộ
+`01651 → 01648` (NQ 1657, Điều 1 khoản 38) và `02482 → 02494`
+(NQ 1684, Điều 1 khoản 28). Clean có 10.571 dòng đối chiếu, 440 xã đa đích
+(970 dòng); Hồng Quang và Công Đa vẫn nhập toàn bộ vào Bế Văn Đàn và Trung Sơn.
+Không thay đổi dữ liệu raw.
