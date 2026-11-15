@@ -84,3 +84,13 @@ Mỗi lần nhận một thay đổi: ghi phán quyết, các số chính và l�
 Tập vàng theo nhóm: đô thị 89,5%, nông thôn 78,5%, **có thôn 74,0%** (trường thôn 80,3%), địa chỉ cũ 88,1%. Điểm yếu lớn nhất là tách thôn/tổ/khối.
 
 Quyết định đầu tiên theo quy chuẩn: từ điển đường mặc định đổi từ `tu_dien_duong_v5.json` sang `tu_dien_train.json` (so_sanh td_v5 → td_train: NHẬN yếu; bộ khó đủ 6 trường 4 kém / 15 tốt, p = 0,019; điền thừa 38 → 26, p < 0,001; v5 bịa tên đường từ ghi chú như "gặp chị Hoa" → Đường Hoa).
+
+## 7. Bộ bất biến (không nhãn, lệnh đo riêng)
+
+`data/bat_bien/cap_bat_bien.csv`: 9.000 cặp = 1.000 câu gốc (dev + test, chỉ lấy chữ đầu vào) x 9 biến đổi không mang thông tin (xem [README](../../data/bat_bien/README.md)). Mã trong danh mục: `bat_bien_dev_test_khong_nhan` (`BO_KHONG_NHAN` trong [du_lieu.py](du_lieu.py), `ds` có in). Bộ này không có nhãn nên **không vào khuôn `Mau`, không nằm trong `chay/cham/so_sanh`**; đo bằng:
+
+```bash
+$PY -X utf8 -B danh_gia/v3/do_bat_bien.py - - <ten>      # '-' = mô hình mặc định; --sinh-lai để sinh lại file cặp
+```
+
+Kết quả ở `rieng/danh_gia_chuan/bat_bien/<ten>.json`. Chỉ số: tỷ lệ cặp đổi (mã xã, mã tỉnh), trong đó đổi sang mã xã khác ("khẳng định khác"). **Số dùng để quyết định chỉ lấy trên các cặp nguồn dev** (7.218 cặp); cặp nguồn test (1.782) chỉ báo kèm, không dùng dò lỗi (cùng nguyên tắc với `test_osm_nhan_ai`). Mốc 15/11/2026 (`goc`, commit `1e4d71d`): đổi mã 1,72% tất cả, 1,30% chỉ dev; khẳng định khác nhau 0,13% / 0,07%.

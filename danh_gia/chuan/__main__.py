@@ -19,7 +19,7 @@ from dataclasses import asdict
 from pathlib import Path
 
 from .cham import cham_mau, so_sanh_cap, tong_hop
-from .du_lieu import BO_DU_LIEU, GOC, MA_CU, TAP_CHINH, TAT_CA_TAP, TRUONG, VAI_TRO, ma_tap, nap
+from .du_lieu import BO_DU_LIEU, BO_KHONG_NHAN, GOC, MA_CU, TAP_CHINH, TAT_CA_TAP, TRUONG, VAI_TRO, ma_tap, nap
 
 THU_MUC = GOC / 'rieng' / 'danh_gia_chuan'
 NHOM_BAO_CAO = ('that', 'sinh', 'do_thi', 'nong_thon', 'dia_chi_cu', 'xa_bi_chia', 'co_thon', 'co_duong',
@@ -97,6 +97,8 @@ def ds(a):
     dm = _danh_muc()
     for tap in TAT_CA_TAP:
         print('\n'.join(_gioi_thieu(tap, len(nap(tap, dm)))))
+    for ma, t in BO_KHONG_NHAN.items():  # bộ không nhãn: chỉ in danh mục, đo bằng danh_gia/v3/do_bat_bien.py
+        print(f"## {t['ten']} (`{ma}`)\n\n{t['mo_ta']}\n\nNguồn: `{t['nguon']}`. Vai trò: **đo bất biến, không nhãn (lệnh riêng)**.\n")
 
 
 def _cham_tap(ten, tap, dm):

@@ -58,6 +58,19 @@ BO_DU_LIEU = {
                   'Chỉ chạy khi chốt phiên bản.'),
     },
 }
+# Bộ không có nhãn nên không vào khuôn Mau, không nằm trong TAT_CA_TAP (lệnh chay/cham/so_sanh không chạm tới).
+# Đo bằng danh_gia/v3/do_bat_bien.py; `ds` chỉ in danh mục.
+BO_KHONG_NHAN = {
+    'bat_bien_dev_test_khong_nhan': {
+        'ten': 'Bất biến: biến đổi vô hại của câu dev + test',
+        'vai_tro': 'bat_bien',
+        'nguon': 'data/bat_bien/cap_bat_bien.csv (9.000 cặp = 1.000 câu gốc dev/test x 9 biến đổi, seed 20261031)',
+        'mo_ta': ('Biến đổi không mang thông tin (số điện thoại cuối, ghi chú cuối, thêm Việt Nam, tiền tố Địa chỉ:, '
+                  'bỏ cách sau phẩy, phẩy thành gạch, viết hoa, nhân đôi dấu cách, thêm xóm 5 đầu câu) không được làm đổi '
+                  'mã xã/tỉnh. Không có nhãn: chỉ đo tỷ lệ đổi mã (và đổi sang mã khác). Số quyết định chỉ lấy trên cặp '
+                  'nguồn dev; cặp nguồn test chỉ báo kèm. Không dùng để train.'),
+    },
+}
 # Mã cũ (trước 05/11/2026) vẫn nhận được để đọc kết quả đã lưu.
 MA_CU = {'dev_that': 'dev_osm_that', 'dev_sinh': 'dev_sinh_danh_muc', 'bo_kho': 'kho_bien_the_ban',
          'test400': 'test_osm_nhan_ai', 'vang': 'vang_ngoai_osm_ai'}
