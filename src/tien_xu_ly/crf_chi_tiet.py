@@ -171,6 +171,15 @@ class NguCanhCRF:
     def diem_hanh_chinh(self, occupied):
         return sum(math.log(max(self.p_o[i], 1e-8)) for i in occupied)
 
+    def _bat_dau_ranh_gioi(self, j, prefixes):
+        """Token j mở một cấp hành chính có tên theo sau (xã Tam Hiệp, p. Yersin): hết phần chi tiết không dấu phẩy.
+        Hai chữ cấp liền nhau (xã phường...) chỉ tính chữ sau cùng, như ranh giới trong tach_co_dau_vet."""
+        marker = prefixes.get(j)
+        if not marker or marker[1] != 'hanh_chinh':
+            return False
+        end = marker[0]
+        return end < len(self.tokens) and self.tokens[end][0].isalnum() and end not in prefixes
+
     def tach(self, occupied, tien_to_mac_dinh=True, tien_to_so_nha=None, tien_to_duong=None):
         if tien_to_so_nha is None:
             tien_to_so_nha = tien_to_mac_dinh
@@ -178,6 +187,7 @@ class NguCanhCRF:
             tien_to_duong = tien_to_mac_dinh
         tags = ['O' if i in occupied else tag for i, tag in enumerate(self.labels)]
         spans, _ = bio_spans(tags)
+        prefixes = cac_tien_to(self.tokens)
         values = {f: [] for f in FIELDS}
         output_spans, used = [], set(occupied)
         inferred = False
@@ -201,9 +211,13 @@ class NguCanhCRF:
                     if proper_field == 'thon_xom' and marker[1][1] in TIEN_TO_THON_XOM:
                         end_idx = marker[0]
                         # Dừng ở token đã là đơn vị hành chính: không dấu phẩy thì "xóm 5 xã mỹ hưng ..." không nuốt xã.
+                        # Cũng dừng ở chữ cấp hành chính có tên theo sau (xã, p., huyện...) dù giả thuyết đã chọn không dùng
+                        # nó: "bản Pom Coọng xã Chiềng Ve" không nuốt xã, "xóm 11 p. Yersin x. Thành Lộc" không nuốt "p. Yersin".
                         while (end_idx < len(self.tokens) and end_idx not in used
                                and self.tokens[end_idx] not in DAU_NGAT_CHI_TIET):
                             if khop_tien_to(self.tokens, end_idx, CHI_TIET):
+                                break
+                            if end_idx >= b and self._bat_dau_ranh_gioi(end_idx, prefixes):
                                 break
                             end_idx += 1
                         if end_idx > b:
@@ -238,6 +252,8 @@ class NguCanhCRF:
                     continue
                 j = end
                 while j < len(self.tokens) and j not in used and self.tokens[j] not in DAU_NGAT_CHI_TIET:
+                    if j > end and self._bat_dau_ranh_gioi(j, prefixes):
+                        break
                     j += 1
                 if j > i:
                     val, g = dinh_dang_span(self.tokens[i:j], f, tien_to_mac_dinh=tien_to_mac_dinh,

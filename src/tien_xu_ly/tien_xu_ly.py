@@ -43,7 +43,9 @@ def token_co_vi_tri(chuoi: str) -> list[Token]:
         glued = re.fullmatch(r"(p|q|h|x|f|phg|phường|phuong|quận|quan|xã|xa|xóm|xom|thôn|thon|ấp|ap|tổ|to|kp|tt|tx"
                              r"|ngõ|ngách|hẻm|kiệt|ngo|ngach|hem|kiet|ng)(\d+[A-Za-z]?(?:/\d+[A-Za-z]?)*)",
                              unicodedata.normalize("NFC", raw), re.I)
-        if glued:
+        # QL14, TL298, QL1A: quốc lộ, tỉnh lộ viết liền số (tối đa ba chữ số, không đụng số điện thoại).
+        glued_lo = re.fullmatch(r"(ql|tl)(\d{1,3}[A-Za-z]?)", unicodedata.normalize("NFC", raw), re.I)
+        if glued or glued_lo:
             cuts.append(re.search(r"\d", raw).start())
         cuts = sorted(set(cuts + [len(raw)]))
         for a, b in zip(cuts, cuts[1:]):
