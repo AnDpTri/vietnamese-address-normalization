@@ -4,7 +4,7 @@ Hỗ trợ đầy đủ:
 - GET /api/v1/health
 - POST /api/v1/normalize
 - POST /api/v1/batch
-- POST /api/v1/feedback (người dùng báo kết quả sai; chỉ ghi khi AMC_LOG=1)
+- POST /api/v1/feedback (người dùng báo kết quả sai khi bật nhật ký)
 - POST /api/v1/excel/xem, POST /api/v1/excel/chay, GET /api/v1/excel/tien_do, GET /api/v1/excel/tai
   (chuẩn hóa một cột trong file .xlsx, chạy nền; xem excel_job.py)
 - CORS preflight OPTIONS
@@ -191,7 +191,11 @@ class AddressMayCryApiHandler(BaseHTTPRequestHandler):
             return res
 
         def ghi_log(dia_chi: str, res: Dict[str, Any]) -> None:
-            nhat_ky.ghi("chuan_hoa", {"nguon": "excel", "input": dia_chi, "engine": eng.engine_name, "result": res})
+            status = "processed" if res.get("ma_xa") else "needs_review"
+            if "loi_xu_ly" in (res.get("canh_bao") or []):
+                status = "error"
+            nhat_ky.ghi("chuan_hoa", {"nguon": "excel", "input": dia_chi, "status": status,
+                                      "engine": eng.engine_name, "result": res})
 
         try:
             job_id = excel_job.chay(str(body.get("file_id", "")), str(body.get("sheet", "")), body["cot"], chuan_hoa, ghi_log)
@@ -411,6 +415,10 @@ class AddressMayCryApiHandler(BaseHTTPRequestHandler):
         body, err = self._read_body_json()
         if err or not isinstance(body, dict) or not isinstance(body.get("input"), str):
             self._send_error_json("INVALID_INPUT", "Cần trường 'input' (chuỗi) và tùy chọn 'log_id', 'ghi_chu'.", HTTPStatus.BAD_REQUEST)
+            return
+        if len(body["input"]) > MAX_ADDRESS_CHARS:
+            self._send_error_json("ADDRESS_TOO_LONG", f"Địa chỉ vượt quá {MAX_ADDRESS_CHARS} ký tự.",
+                                  HTTPStatus.REQUEST_ENTITY_TOO_LARGE)
             return
         ghi_chu = body.get("ghi_chu") if isinstance(body.get("ghi_chu"), str) else ""
         log_id = nhat_ky.ghi("bao_sai", {"input": body["input"], "ref_log_id": body.get("log_id"),

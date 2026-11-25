@@ -8,3 +8,6 @@ services:
     dockerfilePath: ./Dockerfile
     healthCheckPath: /api/v1/health
     autoDeploy: true
+    envVars:
+      - key: AMC_LOG
+        value: render

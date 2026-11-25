@@ -33,6 +33,7 @@ export default function ReportWrong({ input, logId }: { input: string; logId?: s
           className="report-form"
           onSubmit={(e) => { e.preventDefault(); void submit(); }}
         >
+          <p>Khi bạn gửi báo sai, địa chỉ đã nhập và ghi chú sẽ được lưu để nhóm kiểm tra.</p>
           <label htmlFor="bao-sai-ghi-chu">
             Sai ở đâu? (không bắt buộc, ví dụ: “tỉnh bị bỏ qua”, “sai phường”)
           </label>
@@ -53,7 +54,7 @@ export default function ReportWrong({ input, logId }: { input: string; logId?: s
             <button type="button" className="btn btn-ghost btn-sm" onClick={() => setOpen(false)}>
               Hủy
             </button>
-            {state === 'off' && <span role="status" className="report-msg">Máy chủ đang tắt nhật ký (AMC_LOG≠1), chưa lưu được.</span>}
+            {state === 'off' && <span role="status" className="report-msg">Máy chủ chưa lưu được báo sai.</span>}
             {state === 'error' && <span role="alert" className="report-msg is-error">Gửi không được, hãy thử lại.</span>}
           </div>
         </form>
