@@ -4,11 +4,8 @@ import { normalizeBatch } from '../../shared/api';
 import { parseCSV, parsePastedLines, CSV_LIMITS } from './csvParser';
 import { exportToCSV, exportToJSON, type BatchItemWithMeta } from './exportUtils';
 import { SAMPLE_ADDRESSES, getSampleCsvContent } from './sampleData';
-import { ComponentBreakdown } from '../../components/ComponentBreakdown';
+import { ResultDetails } from '../../components/ResultDetails';
 import { describeWarning } from '../../lib/warnings';
-import { TwoLineResult } from '../../components/TwoLineResult';
-import { WarningList, CandidateList } from '../../components/WarningList';
-import { TechTrace } from '../../components/TechTrace';
 import { StatusBadge } from '../../components/StatusBadge';
 import styles from './batch.module.css';
 
@@ -836,7 +833,7 @@ export default function BatchWorkspace({ onInspect }: BatchWorkspaceProps) {
                       setInspectingItem(item);
                     }}
                   >
-                    Xem chi tiết từng thành phần
+                    Xem chi tiết
                   </button>
                 </div>
               ))
@@ -893,7 +890,7 @@ export default function BatchWorkspace({ onInspect }: BatchWorkspaceProps) {
           >
             <div className={styles.drawerHeader}>
               <h3 className={styles.drawerTitle}>
-                Dòng #{inspectingItem.rowIndex} · Chi tiết chuẩn hóa
+                Chi tiết dòng {inspectingItem.rowIndex}
               </h3>
               <button
                 type="button"
@@ -911,7 +908,34 @@ export default function BatchWorkspace({ onInspect }: BatchWorkspaceProps) {
             </div>
 
             <div className={styles.drawerBody}>
-              {/* Nút kiểm tra ở chế độ đơn */}
+              <div className={styles.detailStatusRow}>
+                {inspectingItem.status === 'processed' || inspectingItem.status === 'needs_review' || inspectingItem.status === 'error'
+                  ? <StatusBadge status={inspectingItem.status} />
+                  : <span className={`${styles.statusBadge} ${styles.statusPending}`}>Đang chờ</span>}
+                <span className={styles.monoCell}>
+                  {inspectingItem.elapsed_ms != null ? `Độ trễ: ${inspectingItem.elapsed_ms} ms` : ''}
+                </span>
+              </div>
+
+              <div className={styles.detailSection}>
+                <span className={styles.sectionLabel}>Địa chỉ chuẩn</span>
+                <div className={`${styles.detailValueBox} ${styles.detailAccent}`}>
+                  {inspectingItem.result?.dia_chi_chuan || (
+                    <span className={styles.mutedText}>Chưa có kết quả hoặc gặp lỗi</span>
+                  )}
+                </div>
+              </div>
+
+              <div className={styles.detailSection}>
+                <span className={styles.sectionLabel}>Địa chỉ gốc</span>
+                <div className={styles.detailValueBox}>{inspectingItem.input}</div>
+              </div>
+
+              {inspectingItem.error && (
+                <p className={styles.mutedText} role="status">{inspectingItem.error.message}</p>
+              )}
+
+              <ResultDetails data={inspectingItem} fileName={`dong_${inspectingItem.id}.json`} />
               {onInspect && inspectingItem.status !== 'pending' && (
                 <div className={styles.rowEnd}>
                   <button
@@ -926,102 +950,6 @@ export default function BatchWorkspace({ onInspect }: BatchWorkspaceProps) {
                   </button>
                 </div>
               )}
-
-              <div className={styles.detailStatusRow}>
-                {inspectingItem.status === 'processed' || inspectingItem.status === 'needs_review' || inspectingItem.status === 'error'
-                  ? <StatusBadge status={inspectingItem.status} />
-                  : <span className={`${styles.statusBadge} ${styles.statusPending}`}>Đang chờ</span>}
-                <span className={styles.monoCell}>
-                  {inspectingItem.elapsed_ms != null ? `Độ trễ: ${inspectingItem.elapsed_ms} ms` : ''}
-                </span>
-              </div>
-
-              {/* Đầu vào gốc */}
-              <div className={styles.detailSection}>
-                <span className={styles.sectionLabel}>Địa chỉ đã nhập</span>
-                <div className={styles.detailValueBox}>{inspectingItem.input}</div>
-              </div>
-
-              {/* Đầu ra chuẩn hóa */}
-              <div className={styles.detailSection}>
-                <span className={styles.sectionLabel}>Địa chỉ ghép đầy đủ (mốc 01/07/2025)</span>
-                <div className={`${styles.detailValueBox} ${styles.detailAccent}`}>
-                  {inspectingItem.result?.dia_chi_chuan || (
-                    <span className={styles.mutedText}>Chưa có kết quả hoặc gặp lỗi</span>
-                  )}
-                </div>
-              </div>
-
-              {(() => {
-                const haiDong = inspectingItem.ket_qua_hai_dong || inspectingItem.result?.ket_qua_hai_dong;
-                return haiDong ? <TwoLineResult data={haiDong} /> : null;
-              })()}
-
-              {/* Bảng chi tiết từng thành phần */}
-              {(() => {
-                const thanhPhan = inspectingItem.thanh_phan || inspectingItem.result?.thanh_phan;
-                if (!thanhPhan || thanhPhan.length === 0) return null;
-                return (
-                  <div className={styles.detailSection}>
-                    <ComponentBreakdown
-                      rawAddress={inspectingItem.input}
-                      thanhPhan={thanhPhan}
-                    />
-                  </div>
-                );
-              })()}
-
-              {/* 6 trường cốt lõi */}
-              {inspectingItem.result && (
-                <div className={styles.detailSection}>
-                  <span className={styles.sectionLabel}>Các trường tách riêng</span>
-                  <div className={styles.fieldGrid}>
-                    <div className={styles.fieldItem}>
-                      <span className={styles.fieldItemLabel}>Số nhà</span>
-                      <span className={styles.fieldItemValue}>{inspectingItem.result.so_nha || '-'}</span>
-                    </div>
-                    <div className={styles.fieldItem}>
-                      <span className={styles.fieldItemLabel}>Ngõ / Ngách / Hẻm</span>
-                      <span className={styles.fieldItemValue}>{inspectingItem.result.ngo_ngach_hem || '-'}</span>
-                    </div>
-                    <div className={styles.fieldItem}>
-                      <span className={styles.fieldItemLabel}>Đường / Phố</span>
-                      <span className={styles.fieldItemValue}>{inspectingItem.result.duong || '-'}</span>
-                    </div>
-                    <div className={styles.fieldItem}>
-                      <span className={styles.fieldItemLabel}>Thôn / Xóm / Ấp</span>
-                      <span className={styles.fieldItemValue}>{inspectingItem.result.thon_xom || '-'}</span>
-                    </div>
-                    <div className={styles.fieldItem}>
-                      <span className={styles.fieldItemLabel}>Xã / Phường (Mã)</span>
-                      <span className={styles.fieldItemValue}>
-                        {inspectingItem.result.xa_phuong || '-'} {inspectingItem.result.ma_xa && `(${inspectingItem.result.ma_xa})`}
-                      </span>
-                    </div>
-                    <div className={styles.fieldItem}>
-                      <span className={styles.fieldItemLabel}>Tỉnh / Thành phố (Mã)</span>
-                      <span className={styles.fieldItemValue}>
-                        {inspectingItem.result.tinh || '-'} {inspectingItem.result.ma_tinh && `(${inspectingItem.result.ma_tinh})`}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              <WarningList codes={inspectingItem.result?.canh_bao ?? []} />
-              <CandidateList items={inspectingItem.result?.xa_moi_ung_vien ?? []} />
-
-              {/* Thành phần chưa phân loại */}
-              {inspectingItem.result?.phan_chua_phan_loai && (
-                <div className={styles.detailSection}>
-                  <span className={styles.sectionLabel}>Phần chưa phân loại (Bảo toàn)</span>
-                  <div className={`${styles.detailValueBox} ${styles.mutedText}`}>
-                    {inspectingItem.result.phan_chua_phan_loai}
-                  </div>
-                </div>
-              )}
-
-              <TechTrace data={inspectingItem} summary="Dữ liệu kỹ thuật (JSON) của dòng này" fileName={`dong_${inspectingItem.id}.json`} />
             </div>
           </aside>
         </div>

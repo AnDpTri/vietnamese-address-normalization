@@ -1,6 +1,7 @@
 """Nhật ký chuẩn hóa và báo sai.
 
-AMC_LOG=render: ghi sự kiện JSON vào stdout; chỉ báo sai có địa chỉ và ghi chú.
+AMC_LOG=render: ghi tệp JSONL trên máy chủ và gửi bản sao vào Render Logs.
+Chỉ sự kiện báo sai có địa chỉ và ghi chú. AMC_LOG_DIR có thể trỏ tới ổ đĩa gắn ngoài.
 AMC_LOG=1: ghi nhật ký phát triển đầy đủ vào api/logs/phien_YYYYMMDD.jsonl.
 """
 
@@ -22,6 +23,14 @@ _TRUONG_LOG_RENDER = {
 }
 
 
+def _ghi_tep_jsonl(thu_muc: Path, ngay: str, noi_dung: str) -> None:
+    thu_muc.mkdir(parents=True, exist_ok=True, mode=0o700)
+    tep = thu_muc / f"phien_{ngay}.jsonl"
+    mo_tep = os.open(tep, os.O_CREAT | os.O_APPEND | os.O_WRONLY, 0o600)
+    with os.fdopen(mo_tep, "a", encoding="utf-8", newline="\n") as f:
+        f.write(noi_dung + "\n")
+
+
 def bat() -> bool:
     return os.environ.get("AMC_LOG") == "1"
 
@@ -39,20 +48,24 @@ def ghi(loai: str, du_lieu: dict) -> str | None:
             du_lieu.pop("ref_log_id", None)
 
     log_id = uuid.uuid4().hex[:12]
-    dong = {"log_id": log_id, "loai": loai, "thoi_gian": time.strftime("%Y-%m-%dT%H:%M:%S"), **du_lieu}
-    try:
-        noi_dung = json.dumps(dong, ensure_ascii=False)
-        with _lock:
-            if tren_render:
-                print(f"AMC_LOG {noi_dung}", flush=True)
-            else:
-                LOG_DIR.mkdir(exist_ok=True)
-                tep = LOG_DIR / time.strftime("phien_%Y%m%d.jsonl")
-                with open(tep, "a", encoding="utf-8", newline="\n") as f:
-                    f.write(noi_dung + "\n")
-    except (OSError, UnicodeError):
-        return None
-    return log_id
+    luc = time.localtime()
+    dong = {"log_id": log_id, "loai": loai, "thoi_gian": time.strftime("%Y-%m-%dT%H:%M:%S", luc), **du_lieu}
+    thu_muc = Path(os.environ.get("AMC_LOG_DIR") or LOG_DIR)
+    da_luu = False
+    with _lock:
+        try:
+            _ghi_tep_jsonl(thu_muc, time.strftime("%Y%m%d", luc), json.dumps(dong, ensure_ascii=False))
+            da_luu = True
+        except (OSError, UnicodeError):
+            pass
+        if tren_render:
+            try:
+                ban_sao = json.dumps({**dong, "luu_tep": da_luu}, ensure_ascii=False)
+                print(f"AMC_LOG {ban_sao}", flush=True)
+                da_luu = True
+            except (OSError, UnicodeError):
+                pass
+    return log_id if da_luu else None
 
 
 def ghi_loi(dau_vao: str, loi: Exception) -> str | None:

@@ -728,7 +728,7 @@
   padding: 20px;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 12px;
 }
 
 .detailSection {
@@ -740,8 +740,6 @@
 .sectionLabel {
   font-size: 12px;
   font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
   color: var(--b-muted);
 }
 
@@ -753,34 +751,7 @@
   font-size: 14px;
   line-height: 1.5;
   color: var(--b-text);
-}
-
-.fieldGrid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
-}
-
-.fieldItem {
-  background-color: var(--b-surface);
-  border: 1px solid var(--b-border);
-  border-radius: var(--b-radius-control);
-  padding: 8px 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.fieldItemLabel {
-  font-size: 11px;
-  color: var(--b-muted);
-}
-
-.fieldItemValue {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--b-text);
-  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 
 /* Pagination Bar */
@@ -835,9 +806,6 @@
   }
   .mobileCardsContainer {
     display: flex;
-  }
-  .fieldGrid {
-    grid-template-columns: 1fr;
   }
   .drawerPanel {
     max-width: 100%;
@@ -926,7 +894,7 @@
 .filterBtn { padding: 0 14px; }
 .statusBadge, .warningTag { font-size: 12px; }
 .filterCountBadge { font-size: 12px; }
-.kpiLabel, .sectionLabel, .fieldItemLabel { font-size: 12px; }
+.kpiLabel, .sectionLabel { font-size: 12px; }
 
 /* Trạng thái tương tác & focus */
 .tabBtn:focus-visible, .chipBtn:focus-visible, .filterBtn:focus-visible, .pageBtn:focus-visible,

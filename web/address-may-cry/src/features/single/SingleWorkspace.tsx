@@ -3,7 +3,7 @@ import type { NormalizeResponse } from '../../shared/contracts';
 import { normalizeAddress } from '../../shared/api';
 import { IconAlertTriangle } from '../../components/Icons';
 import { AddressSamples, InputPanel, MAX_CHARS } from './InputPanel';
-import { ResultView } from './ResultView';
+import { ResultDetails } from '../../components/ResultDetails';
 import { PipelineView } from './PipelineView';
 import { StepsView } from './StepsView';
 import { SessionHistory, type HistoryItem } from './SessionHistory';
@@ -17,7 +17,6 @@ export const SingleWorkspace: React.FC = () => {
   const [response, setResponse] = useState<NormalizeResponse | null>(null);
   const [elapsed, setElapsed] = useState(0);
   const [history, setHistory] = useState<HistoryItem[]>([]);
-  const [chiTiet, setChiTiet] = useState(false);
   const [tungBuoc, setTungBuoc] = useState(false);
 
   const abortRef = useRef<AbortController | null>(null);
@@ -167,11 +166,10 @@ export const SingleWorkspace: React.FC = () => {
           {response && !loading && (
             <>
               <PipelineView response={response} />
-              <button type="button" className="btn btn-ghost chi-tiet-toggle" aria-expanded={chiTiet}
-                onClick={() => setChiTiet((v) => !v)}>
-                {chiTiet ? 'Ẩn chi tiết' : 'Xem chi tiết từng thành phần'}
-              </button>
-              {chiTiet && <ResultView response={response} anDau />}
+              <details className="result-disclosure" key={response.log_id ?? response.input}>
+                <summary className="chi-tiet-toggle">Xem chi tiết</summary>
+                <ResultDetails data={response} />
+              </details>
             </>
           )}
         </section>
