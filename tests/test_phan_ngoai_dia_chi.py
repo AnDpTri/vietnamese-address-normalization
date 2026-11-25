@@ -4,6 +4,7 @@ Các chuỗi viết tay, không lấy từ dev/test/vàng.
 """
 
 import unittest
+from unicodedata import normalize
 
 from src.tien_xu_ly.phan_ngoai_dia_chi import che_phan_ngoai_dia_chi as che
 from src.tien_xu_ly.tien_xu_ly import gom_khoang_trang
@@ -21,6 +22,16 @@ class PhanNgoaiDiaChiTests(unittest.TestCase):
     def test_ghi_chu_co_bang_chung_hanh_chinh_duoc_giu(self):
         s = 'Số 5 Đường A (Phường 7) '
         self.assertEqual(che(s), s)
+
+    def test_nfd_giu_nguyen_cum_ky_tu_va_vi_tri_dia_chi(self):
+        prefix = normalize('NFD', 'Địa chỉ: ')
+        address = normalize('NFD', 'Phường Trúc Bạch, Quận Ba Đình, Hà Nội')
+        suffix = normalize('NFD', ', Việt Nam (ghi chú giao hàng)')
+        self.assertEqual(che(prefix + address + suffix), ' ' * len(prefix) + address + ' ' * len(suffix))
+
+    def test_nfd_khong_che_ghi_chu_co_ten_hanh_chinh(self):
+        address = normalize('NFD', 'Số 8 (Phường Trúc Bạch)')
+        self.assertEqual(che(address), address)
 
     def test_khong_che_khi_con_lai_rong_hoac_la_ten_rieng(self):
         self.assertEqual(che('(abc)'), '(abc)')

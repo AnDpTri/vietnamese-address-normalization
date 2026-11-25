@@ -12,7 +12,7 @@ import re
 import unicodedata
 
 from .quy_tac import cac_tien_to
-from .tien_xu_ly import token_co_vi_tri
+from .tien_xu_ly import nfc_offsets, token_co_vi_tri
 
 _NHAN_DAU = re.compile(r"^\s*(?:địa\s*chỉ|dia\s*chi|đ/c|address|addr)\s*[:：]\s*", re.I)
 _QUOC_GIA_CUOI = re.compile(r"(?:[,;]|\s[-–—])\s*(?:việt\s*nam|viet\s*nam|vietnam|vn)\s*\.?\s*$", re.I)
@@ -38,9 +38,13 @@ def _co_bang_chung_hanh_chinh(noi_dung, trie):
 
 def che_phan_ngoai_dia_chi(chuoi, trie=None):
     """Trả chuỗi cùng độ dài, phần ngoài địa chỉ ở đầu/đuôi thay bằng khoảng trắng."""
-    if not chuoi or not unicodedata.is_normalized('NFC', chuoi):
+    if not chuoi:
         return chuoi
-    out = chuoi
+    if unicodedata.is_normalized('NFC', chuoi):
+        chuan, vi_tri = chuoi, None
+    else:
+        chuan, vi_tri = nfc_offsets(chuoi)
+    out = chuan
 
     def che(a, b):
         nonlocal out
@@ -61,4 +65,14 @@ def che_phan_ngoai_dia_chi(chuoi, trie=None):
         if m and che(m.start(), len(out)):
             continue
         break
-    return out
+    if vi_tri is None:
+        return out
+    if out == chuan:
+        return chuoi
+
+    # Các mẫu khớp trên NFC; che toàn bộ cụm ký tự tương ứng trong chuỗi gốc.
+    goc = list(chuoi)
+    for truoc, sau, (a, b) in zip(chuan, out, vi_tri):
+        if truoc != sau:
+            goc[a:b] = ' ' * (b - a)
+    return ''.join(goc)
