@@ -75,6 +75,15 @@ class PipelineTests(unittest.TestCase):
         r = self.bo.chuan_hoa("18B, P.Truc Bach, Q.Ba Dinh, HN")
         self.assertEqual((r.ma_xa, r.ma_tinh), ("00004", "01"))
 
+    def test_phuong_quan_dem_khong_giu_nguyen_so_nha(self):
+        r = self.bo.chuan_hoa("Số 04, P.04, Q.08, TP.HCM")
+        self.assertEqual((r.xa_phuong, r.tinh, r.so_nha), ("Phường Chánh Hưng", "Thành phố Hồ Chí Minh", "Số 04"))
+
+    def test_dem_khong_khong_chot_phuong_bi_chia(self):
+        r = self.bo.chuan_hoa("P.05, Q.08, TP.HCM")
+        self.assertEqual(r.ma_xa, "")
+        self.assertEqual({u["ten"] for u in r.xa_moi_ung_vien}, {"Phường Bình Đông", "Phường Chánh Hưng"})
+
     def test_thieu_tinh_suy_tu_nguon_du_nhat(self):
         r = self.bo.chuan_hoa("Phường Trúc Bạch, Quận Ba Đình")
         self.assertEqual(r.ma_tinh, "01")
