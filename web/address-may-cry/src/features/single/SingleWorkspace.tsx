@@ -2,18 +2,12 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import type { NormalizeResponse } from '../../shared/contracts';
 import { normalizeAddress } from '../../shared/api';
 import { IconAlertTriangle } from '../../components/Icons';
-import { InputPanel, MAX_CHARS } from './InputPanel';
+import { AddressSamples, InputPanel, MAX_CHARS } from './InputPanel';
 import { ResultView } from './ResultView';
 import { PipelineView } from './PipelineView';
 import { StepsView } from './StepsView';
 import { SessionHistory, type HistoryItem } from './SessionHistory';
 import './single.css';
-
-const GUIDE = [
-  { n: '1', t: 'Nhập địa chỉ', d: 'Gõ hoặc dán địa chỉ, viết tắt hay đảo thứ tự đều được.' },
-  { n: '2', t: 'Xem ba dòng kết quả', d: 'Đầu vào, sau tiền xử lý (làm sạch, giữ mốc như người dùng viết) và sau chuyển đổi (đơn vị hành chính mới).' },
-  { n: '3', t: 'Xem chi tiết khi cần', d: 'Bấm “Xem chi tiết” để biết từng chữ được nhận là gì, đổi thế nào và vì sao.' },
-];
 
 export const SingleWorkspace: React.FC = () => {
   const [input, setInput] = useState('');
@@ -81,9 +75,9 @@ export const SingleWorkspace: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tungBuoc]);
 
-  // Trên màn hình hẹp kết quả nằm dưới ô nhập: đưa tiêu đề kết quả vào tầm nhìn sau mỗi lần xử lý xong
+  // Trên màn hình hẹp, đưa tiêu đề kết quả dưới ô nhập vào tầm nhìn.
   useEffect(() => {
-    if (!response || loading || !window.matchMedia('(max-width: 1023px)').matches) return;
+    if (!response || loading || !window.matchMedia('(max-width: 799px)').matches) return;
     const el = document.getElementById('steps-title') ?? document.getElementById('result-title');
     el?.scrollIntoView({ block: 'start' });
     el?.focus({ preventScroll: true });
@@ -110,30 +104,21 @@ export const SingleWorkspace: React.FC = () => {
       <div className="page-intro">
         <h1>Chuẩn hóa một địa chỉ</h1>
         <p>
-          Đưa địa chỉ viết tay, viết tắt hoặc lẫn tên cũ và mới về cách viết chuẩn theo
-          đơn vị hành chính áp dụng từ <strong>01/07/2025</strong>.
+          Gõ hoặc dán địa chỉ viết tắt, thiếu dấu hoặc theo địa giới cũ.
         </p>
       </div>
 
       <div className="single-grid">
-        <div className="single-side">
-          <InputPanel
-            value={input}
-            onChange={(v) => { setInput(v); setFieldError(null); }}
-            onSubmit={submit}
-            loading={loading}
-            elapsed={elapsed}
-            error={fieldError}
-            tungBuoc={tungBuoc}
-            onTungBuoc={setTungBuoc}
-          />
-          <SessionHistory
-            items={history}
-            onPick={(it) => { setInput(it.input); setResponse(it.response); setError(null); }}
-            onClear={() => setHistory([])}
-          />
-        </div>
-
+        <InputPanel
+          value={input}
+          onChange={(v) => { setInput(v); setFieldError(null); }}
+          onSubmit={submit}
+          loading={loading}
+          elapsed={elapsed}
+          error={fieldError}
+          tungBuoc={tungBuoc}
+          onTungBuoc={setTungBuoc}
+        />
         <section className="single-main" aria-labelledby="result-region" aria-busy={loading}>
           <h2 id="result-region" className="sr-only">Vùng kết quả</h2>
 
@@ -159,18 +144,23 @@ export const SingleWorkspace: React.FC = () => {
 
           {showEmpty && (
             <div className="empty-state">
-              <h2 className="card-title">Cách đọc kết quả</h2>
-              <ol className="guide">
-                {GUIDE.map((g) => (
-                  <li key={g.n}>
-                    <span className="guide-n" aria-hidden="true">{g.n}</span>
-                    <div><strong>{g.t}</strong><p>{g.d}</p></div>
-                  </li>
-                ))}
-              </ol>
-              <p className="muted-note">
-                Hệ thống không đưa ra độ tin cậy. Khi chưa chắc chắn, kết quả được đánh dấu “Cần xem lại” kèm lý do.
-              </p>
+              <div>
+                <h2 className="card-title">Kết quả</h2>
+                <p>Địa chỉ chuẩn và cảnh báo sẽ hiển thị ở đây.</p>
+              </div>
+              <div className="address-preview">
+                <h3>Ví dụ đối chiếu</h3>
+                <dl>
+                  <div>
+                    <dt>Địa chỉ gốc</dt>
+                    <dd>Thôn 4, Xã Hoằng Lộc, Huyện Hoằng Hóa, Tỉnh Thanh Hóa</dd>
+                  </div>
+                  <div>
+                    <dt>Địa chỉ sau chuyển đổi</dt>
+                    <dd>Thôn 4, Xã Hoằng Lộc, Tỉnh Thanh Hóa</dd>
+                  </div>
+                </dl>
+              </div>
             </div>
           )}
 
@@ -186,6 +176,17 @@ export const SingleWorkspace: React.FC = () => {
           )}
         </section>
       </div>
+      <AddressSamples showSteps={tungBuoc} disabled={loading} onPick={(address) => {
+        setInput(address);
+        setFieldError(null);
+        if (tungBuoc) void submit(address);
+        else document.getElementById('address-input')?.focus();
+      }} />
+      <SessionHistory
+        items={history}
+        onPick={(it) => { setInput(it.input); setResponse(it.response); setError(null); }}
+        onClear={() => setHistory([])}
+      />
     </div>
   );
 };

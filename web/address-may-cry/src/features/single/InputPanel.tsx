@@ -31,7 +31,6 @@ interface InputPanelProps {
 
 export function InputPanel({ value, onChange, onSubmit, loading, elapsed, error, tungBuoc, onTungBuoc }: InputPanelProps) {
   const ref = useRef<HTMLTextAreaElement | null>(null);
-  const mau = tungBuoc ? SAMPLES_TRINH_BAY : SAMPLES;
 
   const paste = async () => {
     try {
@@ -45,7 +44,10 @@ export function InputPanel({ value, onChange, onSubmit, loading, elapsed, error,
 
   return (
     <section className="card input-card" aria-labelledby="input-title">
-      <h2 id="input-title" className="card-title">Nhập địa chỉ</h2>
+      <div className="input-heading">
+        <h2 id="input-title" className="card-title">Nhập địa chỉ</h2>
+        <a className="sample-jump" href="#address-samples-title">Chọn mẫu</a>
+      </div>
 
       <form
         onSubmit={(e) => { e.preventDefault(); onSubmit(); }}
@@ -65,7 +67,7 @@ export function InputPanel({ value, onChange, onSubmit, loading, elapsed, error,
               onSubmit();
             }
           }}
-          placeholder="Ví dụ: 313 Nguyễn Văn Linh, P. An Khánh, Q. Ninh Kiều, TP Cần Thơ…"
+          placeholder="313 Nguyễn Văn Linh, P. An Khánh, Q. Ninh Kiều, TP Cần Thơ"
           autoComplete="off"
           autoCapitalize="off"
           spellCheck={false}
@@ -74,8 +76,8 @@ export function InputPanel({ value, onChange, onSubmit, loading, elapsed, error,
           className="address-textarea"
         />
         <div className="field-meta">
-          <span id="address-hint">Nhấn <kbd>Ctrl</kbd>&nbsp;+&nbsp;<kbd>Enter</kbd> để chuẩn hóa nhanh</span>
-          <span className="mono" aria-label={`${value.length} trên ${MAX_CHARS} ký tự`}>{value.length}&nbsp;/&nbsp;{MAX_CHARS}</span>
+          <span id="address-hint"><kbd>Ctrl</kbd>&nbsp;+&nbsp;<kbd>Enter</kbd> để chuẩn hóa</span>
+          <span aria-label={`${value.length} trên ${MAX_CHARS} ký tự`}>{value.length}&nbsp;/&nbsp;{MAX_CHARS}</span>
         </div>
         {error && <p id="address-error" className="field-error" role="alert">{error}</p>}
 
@@ -105,33 +107,35 @@ export function InputPanel({ value, onChange, onSubmit, loading, elapsed, error,
           <input type="checkbox" checked={tungBuoc} onChange={(e) => onTungBuoc(e.target.checked)} />
           <span>
             <strong>Xem từng bước xử lý</strong>
-            <span>Hiện lần lượt từng bước bên trong hệ thống, dùng khi trình bày.</span>
+            <span>Mở chế độ trình bày quy trình xử lý.</span>
           </span>
         </label>
       </form>
 
-      <div className="samples">
-        <h3 className="sub-title">{tungBuoc ? 'Ví dụ để trình bày (bấm là chạy)' : 'Thử với ví dụ mẫu'}</h3>
-        <ul className="sample-list">
-          {mau.map((s) => (
-            <li key={s.label}>
-              <button
-                type="button"
-                className="sample-btn"
-                disabled={loading}
-                onClick={() => {
-                  onChange(s.value);
-                  if (tungBuoc) onSubmit(s.value);
-                  else ref.current?.focus();
-                }}
-              >
-                <span className="sample-label">{s.label}</span>
-                <span className="sample-value">{s.value}</span>
-              </button>
-            </li>
-          ))}
-        </ul>
-      </div>
+    </section>
+  );
+}
+
+export function AddressSamples({ showSteps, disabled, onPick }: {
+  showSteps: boolean;
+  disabled: boolean;
+  onPick: (address: string) => void;
+}) {
+  const samples = showSteps ? SAMPLES_TRINH_BAY : SAMPLES;
+
+  return (
+    <section className="samples" aria-labelledby="address-samples-title">
+      <h2 id="address-samples-title" className="card-title">{showSteps ? 'Ví dụ chạy từng bước' : 'Thử với địa chỉ mẫu'}</h2>
+      <ul className="sample-list">
+        {samples.map(({ label, value }) => (
+          <li key={label}>
+            <button type="button" className="sample-btn" disabled={disabled} onClick={() => onPick(value)}>
+              <span className="sample-label">{label}</span>
+              <span className="sample-value">{value}</span>
+            </button>
+          </li>
+        ))}
+      </ul>
     </section>
   );
 }

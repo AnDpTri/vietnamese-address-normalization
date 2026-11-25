@@ -7,24 +7,24 @@
 :root {
   color-scheme: light dark;
 
-  /* Bảng màu theo Wallet May Cry (nền, bề mặt, chữ, nút trung tính, nhấn xanh dương) */
-  --ground: #f2f4f7;
+  /* Khung xanh xám và vùng làm việc trắng, lấy màu từ tài liệu địa chính. */
+  --ground: #edf3f2;
   --surface: #ffffff;
-  --raised: #f7f8fa;
-  --active: #e9ecf0;
-  --border: #e3e6eb;
-  --border-strong: #cfd4db;
+  --raised: #f5f8f7;
+  --active: #e5edeb;
+  --border: #dfe8e5;
+  --border-strong: #c5d4d0;
   --control: #ffffff;
 
-  --text: #0f1114;
-  --muted: #5a6270;
-  --faint: #656d7a;
+  --text: #182522;
+  --muted: #51605d;
+  --faint: #596b65;
 
-  --accent: #16191d;
-  --accent-hover: #2d3239;
-  --accent-light: #e6eefa;
+  --accent: #175b56;
+  --accent-hover: #104541;
+  --accent-light: #e8f4f0;
   --accent-text: #ffffff;
-  --link: #1d5fbf;
+  --link: #1b685f;
 
   --positive: #1e6f46;
   --negative: #c4242a;
@@ -66,15 +66,17 @@
   --fs-base: 0.9375rem;
   --fs-md: 1.0625rem;
   --fs-lg: 1.25rem;
-  --fs-xl: clamp(1.5rem, 1.1rem + 1.6vw, 2.125rem);
+  --fs-xl: clamp(1.5rem, 1.3rem + 0.6vw, 1.875rem);
 
   --shadow-card: none;
 
   --ease-standard: cubic-bezier(0.2, 0, 0, 1);
   --duration-fast: 140ms;
   --duration-normal: 220ms;
-  --header-h: 64px;
-  --sidebar-w: 248px;
+  --header-h: 68px;
+  --shell-gutter: clamp(16px, 4vw, 54px);
+  --radius-sheet: 16px;
+  --page-gutter: clamp(20px, 3vw, 40px);
 }
 
 /* Nền tối: theo hệ thống khi người dùng chưa chọn; nút sáng/tối đặt data-theme trên <html>. */
@@ -95,9 +97,9 @@
 
     --accent: #f3f4f6;
     --accent-hover: #d9dbe0;
-    --accent-light: #1b2840;
+    --accent-light: #1a302b;
     --accent-text: #0e0f11;
-    --link: #7fb0f5;
+    --link: #8bd6c7;
 
     --positive: #55c28b;
     --negative: #f0707a;
@@ -139,9 +141,9 @@
 
   --accent: #f3f4f6;
   --accent-hover: #d9dbe0;
-  --accent-light: #1b2840;
+  --accent-light: #1a302b;
   --accent-text: #0e0f11;
-  --link: #7fb0f5;
+  --link: #8bd6c7;
 
   --positive: #55c28b;
   --negative: #f0707a;
@@ -167,6 +169,13 @@
   --shadow-card: none;
 }
 :root[data-theme="light"] { color-scheme: light; }
+
+@media (max-width: 719px) {
+  :root {
+    --header-h: 104px;
+    --page-gutter: clamp(16px, 3vw, 24px);
+  }
+}
 
 *, *::before, *::after { box-sizing: border-box; }
 * { margin: 0; padding: 0; }

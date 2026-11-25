@@ -4,41 +4,45 @@ import ReportWrong from '../../components/ReportWrong';
 import { StatusBadge } from '../../components/StatusBadge';
 import { CopyButton } from '../../components/CopyButton';
 
-/** Ba dòng theo hai bước của hệ thống: đầu vào -> sau tiền xử lý (đúng mốc người dùng viết) -> sau chuyển đổi (mốc mới). */
 export function PipelineView({ response }: { response: NormalizeResponse }) {
   const r = response.result;
-  const dong = [
-    { nhan: 'Đầu vào', phu: 'Người dùng nhập', giaTri: response.input, cls: 'is-input' },
-    { nhan: 'Sau tiền xử lý', phu: 'Làm sạch, giữ mốc như người dùng viết', giaTri: r.dia_chi_sau_tien_xu_ly || '', cls: 'is-clean' },
-    { nhan: 'Sau chuyển đổi', phu: 'Đơn vị hành chính mới, mốc 01/07/2025', giaTri: r.dia_chi_chuan, cls: 'is-new' },
-  ];
+  const diaChiChuan = r.dia_chi_chuan;
+  const daLamSach = r.dia_chi_sau_tien_xu_ly;
   return (
     <div className="result-stack">
       <div className="result-head">
         <div className="result-head-main">
           <h2 className="card-title" id="result-title" tabIndex={-1}>Kết quả</h2>
           <StatusBadge status={response.status} />
-          <span className="muted-note mono">{response.elapsed_ms}&nbsp;ms</span>
+          <span className="muted-note result-time">{response.elapsed_ms}&nbsp;ms</span>
         </div>
         <ReportWrong key={response.log_id ?? response.input} input={response.input} logId={response.log_id} />
       </div>
-      <ol className="pipeline">
-        {dong.map((d, i) => (
-          <li key={d.nhan} className={`pipeline-row ${d.cls}`}>
-            <span className="pipeline-step" aria-hidden="true">{i + 1}</span>
-            <div className="pipeline-text">
-              <span className="pipeline-label">{d.nhan}<small>{d.phu}</small></span>
-              {d.giaTri
-                ? <p className="pipeline-value">{d.giaTri}</p>
-                : <p className="pipeline-value is-empty">Không có</p>}
-            </div>
-            {d.giaTri && i > 0 && <CopyButton text={d.giaTri} what={d.nhan.toLowerCase()} />}
-          </li>
-        ))}
-      </ol>
+      <div className="pipeline-row is-new">
+        <div className="pipeline-text">
+          <span className="pipeline-label">Địa chỉ chuẩn <small>Địa giới từ 01/07/2025</small></span>
+          <p className={`pipeline-value${diaChiChuan ? '' : ' is-empty'}`}>{diaChiChuan || 'Chưa xác định được'}</p>
+        </div>
+        {diaChiChuan && <CopyButton text={diaChiChuan} what="địa chỉ chuẩn" />}
+      </div>
       {response.status === 'needs_review' && (
-        <p className="review-note" role="note">Kết quả cần xem lại. Mở phần chi tiết để xem cảnh báo và lý do.</p>
+        <p className="review-note" role="note">Mở chi tiết để xem phần địa chỉ cần kiểm tra và lý do.</p>
       )}
+      <div className="pipeline">
+        <div className="pipeline-row">
+          <div className="pipeline-text">
+            <span className="pipeline-label">Địa chỉ gốc</span>
+            <p className="pipeline-value">{response.input}</p>
+          </div>
+        </div>
+        <div className="pipeline-row">
+          <div className="pipeline-text">
+            <span className="pipeline-label">Sau tiền xử lý <small>Giữ địa giới như đầu vào</small></span>
+            <p className={`pipeline-value${daLamSach ? '' : ' is-empty'}`}>{daLamSach || 'Chưa xác định được'}</p>
+          </div>
+          {daLamSach && <CopyButton text={daLamSach} what="địa chỉ sau tiền xử lý" />}
+        </div>
+      </div>
     </div>
   );
 }

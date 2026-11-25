@@ -31,7 +31,6 @@ function themeHienTai(): Theme {
   return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
 }
 
-/** Thanh bên kiểu Wallet May Cry: tên app, điều hướng, trạng thái máy chủ và nút sáng/tối ở đáy. */
 export const Header: React.FC<HeaderProps> = ({ activeTab, hrefs, health, healthLoading, onRefreshHealth }) => {
   const [theme, setTheme] = useState<Theme>(themeHienTai);
   useEffect(() => {
@@ -52,33 +51,34 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, hrefs, health, health
   ];
 
   return (
-    <header className="sidebar">
-      <a className="brand" href={hrefs.single} aria-label="Address May Cry, về trang một địa chỉ">
-        <IconLogo size={30} aria-hidden="true" />
-        <span className="brand-text">
-          <span className="brand-name" translate="no">Address May Cry</span>
-          <span className="brand-sub">Chuẩn hóa địa chỉ · mốc 01/07/2025</span>
-        </span>
-      </a>
-
-      <nav className="main-nav" aria-label="Chế độ làm việc">
-        {muc.map((m) => (
-          <a key={m.id} href={hrefs[m.id]} aria-current={activeTab === m.id ? 'page' : undefined}>
-            {m.icon}<span>{m.nhan}</span>
-          </a>
-        ))}
-      </nav>
-
-      <div className="sidebar-foot">
-        <button type="button" className="health" onClick={onRefreshHealth} aria-label={`${statusText}. Bấm để kiểm tra lại`}>
-          <span className={`health-dot ${dotClass}`} aria-hidden="true" />
-          <span className="health-text" aria-live="polite">{statusText}</span>
-        </button>
-        <button type="button" className="theme-toggle" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-          aria-label={theme === 'dark' ? 'Chuyển sang nền sáng' : 'Chuyển sang nền tối'}>
-          {theme === 'dark' ? <IconSun /> : <IconMoon />}
-          <span>{theme === 'dark' ? 'Nền sáng' : 'Nền tối'}</span>
-        </button>
+    <header className="app-navigation">
+      <div className="navigation-inner">
+        <a className="brand" href={hrefs.single} aria-label="Address May Cry, về trang một địa chỉ">
+          <IconLogo size={26} aria-hidden="true" />
+          <span className="brand-text">
+            <span className="brand-name" translate="no">Address May Cry</span>
+            <span className="brand-context">Địa giới từ 01/07/2025</span>
+          </span>
+        </a>
+        <nav className="main-nav" aria-label="Chế độ làm việc">
+          {muc.map((m) => (
+            <a key={m.id} href={hrefs[m.id]} aria-current={activeTab === m.id ? 'page' : undefined}>
+              {m.icon}<span>{m.nhan}</span>
+            </a>
+          ))}
+        </nav>
+        <div className="header-controls">
+          <button type="button" className="health" onClick={onRefreshHealth} aria-label={`${statusText}. Bấm để kiểm tra lại`}
+            title={statusText}>
+            <span className={`health-dot ${dotClass}`} aria-hidden="true" />
+            <span className="health-text" aria-live="polite">{statusText}</span>
+          </button>
+          <button type="button" className="theme-toggle" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+            aria-label={theme === 'dark' ? 'Chuyển sang nền sáng' : 'Chuyển sang nền tối'}
+            title={theme === 'dark' ? 'Nền sáng' : 'Nền tối'}>
+            {theme === 'dark' ? <IconSun /> : <IconMoon />}
+          </button>
+        </div>
       </div>
     </header>
   );

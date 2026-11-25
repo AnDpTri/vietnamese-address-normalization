@@ -53,8 +53,6 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
-  border-bottom: 1px solid var(--b-border);
-  padding-bottom: 16px;
 }
 
 .titleRow {
@@ -66,26 +64,15 @@
 }
 
 .mainTitle {
-  font-size: 24px;
+  font-size: var(--fs-xl);
   font-weight: 700;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.035em;
   color: var(--b-text);
   margin: 0;
 }
 
-.targetTag {
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--b-text);
-  background-color: var(--b-active);
-  padding: 4px 10px;
-  border-radius: 4px;
-  font-variant-numeric: tabular-nums;
-  border: 1px solid var(--b-border);
-}
-
 .leadQuestion {
-  font-size: 14px;
+  font-size: var(--fs-base);
   color: var(--b-muted);
   line-height: 1.5;
   margin: 0;
@@ -94,9 +81,8 @@
 /* Mode Switcher Tabs */
 .modeTabs {
   display: flex;
-  gap: 8px;
+  gap: 14px;
   border-bottom: 1px solid var(--b-border);
-  padding-bottom: 8px;
 }
 
 .tabBtn {
@@ -104,13 +90,14 @@
   align-items: center;
   gap: 8px;
   min-height: 40px;
-  padding: 8px 16px;
-  border-radius: var(--b-radius-control);
+  padding: 8px 10px;
+  border-radius: var(--b-radius-control) var(--b-radius-control) 0 0;
   font-size: 14px;
   font-weight: 500;
   color: var(--b-muted);
   background: transparent;
   border: 1px solid transparent;
+  border-bottom-width: 2px;
   cursor: pointer;
   transition: color 150ms ease, background-color 150ms ease, border-color 150ms ease;
 }
@@ -122,8 +109,7 @@
 
 .tabBtn.activeTab {
   color: var(--b-text);
-  background-color: var(--b-raised);
-  border-color: var(--b-border);
+  border-bottom-color: var(--link);
   font-weight: 600;
 }
 
@@ -132,7 +118,7 @@
   background-color: var(--b-surface);
   border: 1px solid var(--b-border);
   border-radius: var(--b-radius-card);
-  padding: 20px;
+  padding: clamp(16px, 2vw, 22px);
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -147,14 +133,14 @@
 
 .addressTextarea {
   width: 100%;
-  min-height: 150px;
+  min-height: 132px;
   padding: 12px 14px;
   font-family: var(--b-font);
-  font-size: 14px;
+  font-size: var(--fs-base);
   line-height: 1.6;
   color: var(--b-text);
   background-color: var(--b-raised);
-  border: 1px solid var(--b-border);
+  border: 1px solid var(--b-control);
   border-radius: var(--b-radius-control);
   resize: vertical;
   box-sizing: border-box;
@@ -399,19 +385,22 @@
 /* KPI Counter Bar */
 .kpiStrip {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  border: 1px solid var(--b-border);
+  border-radius: var(--b-radius-card);
+  background: var(--b-surface);
+  overflow: hidden;
 }
 
 .kpiCard {
-  background-color: var(--b-raised);
-  border: 1px solid var(--b-border);
-  border-radius: var(--b-radius-control);
-  padding: 12px 14px;
+  padding: 12px 15px;
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
+
+.kpiCard:nth-child(even) { border-left: 1px solid var(--b-border); }
+.kpiCard:nth-child(n+3) { border-top: 1px solid var(--b-border); }
 
 .kpiLabel {
   font-size: 12px;
@@ -428,10 +417,6 @@
 
 .kpiCard.kpiWarning .kpiValue {
   color: var(--b-warning);
-}
-
-.kpiCard.kpiPositive .kpiValue {
-  color: var(--b-positive);
 }
 
 .kpiCard.kpiNegative .kpiValue {
@@ -798,20 +783,6 @@
   word-break: break-word;
 }
 
-.guidanceTag {
-  font-size: 12px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--link, var(--b-accent));
-}
-
-@media (prefers-color-scheme: dark) {
-  .guidanceTag {
-    color: var(--link, var(--b-accent));
-  }
-}
-
 /* Pagination Bar */
 .paginationBar {
   display: flex;
@@ -895,8 +866,35 @@
   --b-ground: var(--ground);
   --b-control: var(--border-strong);
   max-width: 1320px;
-  padding: var(--space-5) max(16px, env(safe-area-inset-right)) var(--space-6) max(16px, env(safe-area-inset-left));
+  padding: var(--space-6) var(--page-gutter);
   min-width: 0;
+}
+
+.batchSummary {
+  display: grid;
+  align-self: start;
+  align-content: start;
+  gap: var(--space-3);
+  padding: clamp(16px, 2vw, 22px);
+  border: 1px solid var(--b-border);
+  border-radius: var(--b-radius-card);
+  background: var(--b-raised);
+  min-width: 0;
+}
+
+.batchSummary h2 { font-size: var(--fs-md); font-weight: 700; }
+.batchSummary .progressContainer { padding: 0; border: 0; background: transparent; }
+
+@media (min-width: 820px) {
+  .batchWorkspace {
+    display: grid;
+    grid-template-columns: minmax(0, 1.7fr) minmax(260px, 1fr);
+    column-gap: var(--space-5);
+  }
+  .batchWorkspace > * { grid-column: 1 / -1; min-width: 0; }
+  .batchWorkspace > .modeTabs { grid-column: 1; grid-row: 2; }
+  .batchWorkspace > .inputCard { grid-column: 1; grid-row: 3; }
+  .batchWorkspace > .batchSummary { grid-column: 2; grid-row: 2 / 4; }
 }
 
 .stackCol { display: flex; flex-direction: column; gap: 14px; }
@@ -906,7 +904,7 @@
 .mutedText { color: var(--b-muted); }
 .emptyCell { text-align: center; padding: 32px 14px; color: var(--b-muted); }
 .tdCenter { text-align: center; }
-.tdRight { text-align: right; }
+.tdRight { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
 .tdWrap { max-width: 340px; overflow-wrap: anywhere; }
 .tdStrong { font-weight: 500; }
 .thIdx { width: 56px; text-align: center; }
@@ -918,10 +916,8 @@
 .cardBtn { width: 100%; margin-top: 8px; justify-content: center; }
 .detailAccent { font-weight: 600; color: var(--b-accent); }
 .detailStatusRow { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
-.guideGrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); gap: var(--b-gap); }
-.guideCard { background-color: var(--b-surface); border: 1px solid var(--b-border); border-radius: var(--b-radius-card); padding: 18px 20px; display: flex; flex-direction: column; gap: 8px; }
-.guideCard h2 { font-size: 16px; font-weight: 700; margin: 0; color: var(--b-text); text-wrap: balance; }
-.guideCard p { font-size: 14px; color: var(--b-muted); line-height: 1.6; margin: 0; }
+.guideGrid { display: grid; gap: var(--space-3); }
+.guideGrid p { font-size: var(--fs-sm); color: var(--b-muted); }
 
 /* Vùng chạm tối thiểu 44px cho mọi điều khiển */
 .tabBtn, .chipBtn, .columnSelect, .filterBtn, .searchInput, .pageBtn, .closeDrawerBtn { min-height: 44px; }
@@ -954,11 +950,10 @@
 }
 
 @media (max-width: 768px) {
-  .batchWorkspace { padding-top: var(--space-4); }
+  .batchWorkspace { padding-top: var(--space-5); }
   .searchBox { min-width: 0; max-width: none; width: 100%; }
   .toolbarCard { flex-direction: column; align-items: stretch; }
   .filterTabs { flex-wrap: wrap; }
-  .kpiStrip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .drawerHeader { padding: 12px 16px; }
   .drawerBody { padding: 16px; }
 }

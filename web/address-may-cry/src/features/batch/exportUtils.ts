@@ -11,11 +11,11 @@
 
 import type { BatchItem } from '../../shared/contracts';
 
-export interface BatchItemWithMeta extends BatchItem {
+export type BatchItemWithMeta = (BatchItem | (Omit<BatchItem, 'status'> & { status: 'pending' })) & {
   rowIndex: number;
   originalData?: Record<string, string>;
   selected?: boolean;
-}
+};
 
 /**
  * Phòng vệ chống CSV Injection:

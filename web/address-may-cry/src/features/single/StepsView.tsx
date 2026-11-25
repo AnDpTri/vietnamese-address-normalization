@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import type { DonViBuoc, GiaiThich, NormalizeResponse } from '../../shared/contracts';
 import { KIND_SHORT, kindOf } from '../../lib/kinds';
 import { describeWarning } from '../../lib/warnings';
+import { IconCheck } from '../../components/Icons';
 import { StatusBadge } from '../../components/StatusBadge';
 import './steps.css';
 
@@ -310,7 +311,7 @@ export function StepsView({ response, onDoiDiaChi }: { response: NormalizeRespon
         {hien >= tong && (
           <li className="sv-step is-wide is-result" data-n="kq">
             <div className="sv-title">
-              <span className="sv-n">✓</span>
+              <span className="sv-n"><IconCheck aria-hidden="true" /></span>
               <h3>Kết quả</h3>
               <StatusBadge status={response.status} />
               <span className="sv-meta">xử lý trong {Math.round(response.elapsed_ms)} ms</span>

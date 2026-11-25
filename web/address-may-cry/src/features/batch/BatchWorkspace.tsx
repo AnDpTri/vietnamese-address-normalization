@@ -148,7 +148,7 @@ export default function BatchWorkspace({ onInspect }: BatchWorkspaceProps) {
         id: `csv_row_${idx + 1}`,
         rowIndex: idx + 1,
         input: row[parsed.detectedAddressColumn] || '',
-        status: 'processed' as const, // sẽ chuyển thành pending khi bắt đầu
+        status: 'pending',
         originalData: row,
       }));
       setBatchItems(initialItems);
@@ -167,7 +167,7 @@ export default function BatchWorkspace({ onInspect }: BatchWorkspaceProps) {
         id: `csv_row_${idx + 1}`,
         rowIndex: idx + 1,
         input: row[newCol] || '',
-        status: 'processed' as const,
+        status: 'pending',
         originalData: row,
       }));
       setBatchItems(updated);
@@ -182,7 +182,7 @@ export default function BatchWorkspace({ onInspect }: BatchWorkspaceProps) {
       id: `paste_row_${idx + 1}`,
       rowIndex: idx + 1,
       input: line,
-      status: 'processed' as const,
+      status: 'pending',
       originalData: { dia_chi: line },
     }));
   };
@@ -200,7 +200,6 @@ export default function BatchWorkspace({ onInspect }: BatchWorkspaceProps) {
           setErrorMessage('Vui lòng nhập hoặc dán ít nhất 1 dòng địa chỉ.');
           return;
         }
-        setBatchItems(itemsToProcess);
       } catch (err: any) {
         setErrorMessage(err.message || 'Lỗi phân tích cú pháp danh sách dán.');
         return;
@@ -210,9 +209,12 @@ export default function BatchWorkspace({ onInspect }: BatchWorkspaceProps) {
         setErrorMessage('Chưa có dữ liệu từ tệp CSV. Vui lòng tải tệp lên trước.');
         return;
       }
-      itemsToProcess = [...batchItems];
+      itemsToProcess = batchItems.map(({ id, rowIndex, input, originalData }) => ({
+        id, rowIndex, input, originalData, status: 'pending',
+      }));
     }
 
+    setBatchItems(itemsToProcess);
     const sessionId = Date.now();
     setActiveSessionId(sessionId);
     setIsProcessing(true);
@@ -403,10 +405,9 @@ export default function BatchWorkspace({ onInspect }: BatchWorkspaceProps) {
       <section className={styles.headerSection}>
         <div className={styles.titleRow}>
           <h1 className={styles.mainTitle}>Chuẩn hóa hàng loạt</h1>
-          <span className={styles.targetTag}>Mốc hành chính: 01/07/2025</span>
         </div>
         <p className={styles.leadQuestion}>
-          Dán danh sách hoặc tải tệp CSV, theo dõi tiến độ, lọc các dòng cần xem lại rồi xuất kết quả ra CSV hoặc JSON.
+          Dán danh sách hoặc tải tệp CSV. Xem các dòng có cảnh báo trước khi xuất kết quả.
         </p>
       </section>
 
@@ -415,16 +416,18 @@ export default function BatchWorkspace({ onInspect }: BatchWorkspaceProps) {
         <button
           type="button"
           className={`${styles.tabBtn} ${inputMode === 'paste' ? styles.activeTab : ''}`}
+          aria-pressed={inputMode === 'paste'}
           onClick={() => { setInputMode('paste'); setErrorMessage(null); }}
         >
-          Dán danh sách nhiều dòng
+          Dán danh sách
         </button>
         <button
           type="button"
           className={`${styles.tabBtn} ${inputMode === 'csv' ? styles.activeTab : ''}`}
+          aria-pressed={inputMode === 'csv'}
           onClick={() => { setInputMode('csv'); setErrorMessage(null); }}
         >
-          Kéo / Chọn tệp CSV (UTF-8)
+          Tải tệp CSV
         </button>
       </nav>
 
@@ -603,69 +606,46 @@ export default function BatchWorkspace({ onInspect }: BatchWorkspaceProps) {
         </div>
       </section>
 
-      {/* 3b. Hướng dẫn khi chưa có danh sách */}
-      {batchItems.length === 0 && (
-        <section className={styles.guideGrid} aria-label="Hướng dẫn nhanh">
-          <div className={styles.guideCard}>
-            <span className={styles.guidanceTag}>Mốc 01/07/2025</span>
-            <h2>Không cần chọn mốc cũ hay mới</h2>
-            <p>Địa chỉ viết theo tên cũ, tên mới hoặc lẫn cả hai đều được quy về xã/phường và tỉnh/thành áp dụng từ 01/07/2025.</p>
+      <aside className={styles.batchSummary} aria-labelledby="batch-summary-title">
+        <h2 id="batch-summary-title">Tiến độ và kết quả</h2>
+        {batchItems.length === 0 ? (
+          <div className={styles.guideGrid}>
+            <p>Thêm địa chỉ và bấm bắt đầu để xem tiến độ và các dòng cần kiểm tra.</p>
+            <p>Khi nhập CSV, tệp xuất giữ cột ban đầu và thêm kết quả chuẩn hóa.</p>
           </div>
-          <div className={styles.guideCard}>
-            <span className={styles.guidanceTag}>Xử lý từng gói</span>
-            <h2>Theo dõi tiến độ, dừng bất cứ lúc nào</h2>
-            <p>Danh sách được gửi theo từng gói 20 dòng. Khi bấm dừng, các dòng đã xử lý xong vẫn được giữ lại.</p>
-          </div>
-          <div className={styles.guideCard}>
-            <span className={styles.guidanceTag}>Xuất tệp</span>
-            <h2>CSV giữ nguyên cột gốc</h2>
-            <p>Tệp CSV giữ mọi cột bạn tải lên, thêm các trường kết quả và mã hành chính. Các ô bắt đầu bằng =, +, - hoặc @ được vô hiệu hóa để an toàn khi mở bằng Excel.</p>
-          </div>
-        </section>
-      )}
-
-      {/* 4. Tiến độ thời gian thực (Chunk 20) */}
-      {(isProcessing || processedCount > 0) && (
-        <section className={styles.progressContainer}>
-          <div className={styles.progressBarTrack}>
-            <div
-              className={styles.progressBarFill}
-              style={{ width: `${counts.total > 0 ? (processedCount / counts.total) * 100 : 0}%` }}
-            />
-          </div>
-          <div className={styles.progressStatsRow}>
-            <span>
-              Tiến độ: <strong>{processedCount}</strong> / {counts.total} dòng ({counts.total > 0 ? Math.round((processedCount / counts.total) * 100) : 0}%)
-              {isProcessing && ' · Đang gửi từng gói 20 địa chỉ…'}
-            </span>
-            <span>
-              Thời gian xử lý: <strong>{totalElapsedMs.toLocaleString('vi-VN')} ms</strong>
-            </span>
-          </div>
-        </section>
-      )}
-
-      {/* 5. Dải đếm trạng thái thực chất (KPIs) */}
-      {batchItems.length > 0 && (
-        <section className={styles.kpiStrip}>
-          <div className={styles.kpiCard}>
-            <span className={styles.kpiLabel}>Tổng số dòng</span>
-            <span className={styles.kpiValue}>{counts.total}</span>
-          </div>
-          <div className={`${styles.kpiCard} ${styles.kpiWarning}`}>
-            <span className={styles.kpiLabel}>Cần xem lại</span>
-            <span className={styles.kpiValue}>{counts.needs_review}</span>
-          </div>
-          <div className={`${styles.kpiCard} ${styles.kpiPositive}`}>
-            <span className={styles.kpiLabel}>Đã xử lý (Processed)</span>
-            <span className={styles.kpiValue}>{counts.processed}</span>
-          </div>
-          <div className={`${styles.kpiCard} ${styles.kpiNegative}`}>
-            <span className={styles.kpiLabel}>Lỗi kết nối / định dạng</span>
-            <span className={styles.kpiValue}>{counts.error}</span>
-          </div>
-        </section>
-      )}
+        ) : (
+          <>
+            <div className={styles.progressContainer}>
+              <div className={styles.progressBarTrack} role="progressbar" aria-label="Tiến độ chuẩn hóa hàng loạt"
+                aria-valuemax={counts.total} aria-valuenow={processedCount}>
+                <div className={styles.progressBarFill} style={{ width: `${(processedCount / counts.total) * 100}%` }} />
+              </div>
+              <div className={styles.progressStatsRow} role="status">
+                <span><strong>{processedCount}/{counts.total}</strong> dòng đã xử lý</span>
+                <span>{isProcessing ? 'Đang xử lý…' : `${totalElapsedMs.toLocaleString('vi-VN')} ms`}</span>
+              </div>
+            </div>
+            <dl className={styles.kpiStrip}>
+              <div className={styles.kpiCard}>
+                <dt className={styles.kpiLabel}>Tổng số dòng</dt>
+                <dd className={styles.kpiValue}>{counts.total}</dd>
+              </div>
+              <div className={`${styles.kpiCard} ${counts.needs_review > 0 ? styles.kpiWarning : ''}`}>
+                <dt className={styles.kpiLabel}>Cần xem lại</dt>
+                <dd className={styles.kpiValue}>{counts.needs_review}</dd>
+              </div>
+              <div className={styles.kpiCard}>
+                <dt className={styles.kpiLabel}>Không có cảnh báo</dt>
+                <dd className={styles.kpiValue}>{counts.processed}</dd>
+              </div>
+              <div className={`${styles.kpiCard} ${counts.error > 0 ? styles.kpiNegative : ''}`}>
+                <dt className={styles.kpiLabel}>Dòng lỗi</dt>
+                <dd className={styles.kpiValue}>{counts.error}</dd>
+              </div>
+            </dl>
+          </>
+        )}
+      </aside>
 
       {/* 6. Thanh công cụ Lọc & Tìm kiếm */}
       {batchItems.length > 0 && (
@@ -932,7 +912,7 @@ export default function BatchWorkspace({ onInspect }: BatchWorkspaceProps) {
 
             <div className={styles.drawerBody}>
               {/* Nút kiểm tra ở chế độ đơn */}
-              {onInspect && (
+              {onInspect && inspectingItem.status !== 'pending' && (
                 <div className={styles.rowEnd}>
                   <button
                     type="button"
