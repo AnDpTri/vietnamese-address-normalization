@@ -1,22 +1,9 @@
 import React, { useRef } from 'react';
 import { IconClipboard, IconRefresh, IconX } from '../../components/Icons';
+import { AddressSampleList } from '../../components/AddressSampleList';
+import { ADDRESS_SAMPLES } from '../../shared/addressSamples';
 
 export const MAX_CHARS = 2048;
-
-const SAMPLES = [
-  { label: 'Viết tắt, đảo thứ tự', value: '45 XÔ VIẾT NGHỆ TĨNH P.AN CƯ- NINH KIỀU- CẦN THƠ' },
-  { label: 'Đầy đủ số nhà, phường, quận', value: '313, NGUYỄN VĂN LINH, PHƯỜNG AN KHÁNH, QUẬN NINH KIỀU, THÀNH PHỐ CẦN THƠ' },
-  { label: 'Tên đường viết tắt (CMT8)', value: '110A CMT8, Phường An Thới, Quận Bình Thủy, TP Cần Thơ' },
-  { label: 'Phường cũ của Hà Nội', value: 'Số 42, Phố Bồ Đề, Phường Bồ Đề, Quận Long Biên, Hà Nội' },
-  { label: 'Địa chỉ nông thôn có thôn', value: 'Thôn 4, Xã Hoằng Lộc, Huyện Hoằng Hóa, Tỉnh Thanh Hóa' },
-];
-
-// Ví dụ cho chế độ "Xem từng bước": bấm là chạy luôn. Tự đặt, không lấy từ tập test.
-const SAMPLES_TRINH_BAY = [
-  { label: 'Gõ tắt, không dấu, không dấu phẩy', value: 'so 12 ngo 5 tran thai tong cau giay hn' },
-  { label: 'Ghi theo địa giới cũ (phường, quận cũ)', value: 'Số 10 Lê Lợi, Phường Bến Nghé, Quận 1, TP Hồ Chí Minh' },
-  { label: 'Ca hệ thống còn sai: chọn nhầm phường', value: '12 ngo 5 tran thai tong p dich vong hau q cau giay hn' },
-];
 
 interface InputPanelProps {
   value: string;
@@ -67,7 +54,7 @@ export function InputPanel({ value, onChange, onSubmit, loading, elapsed, error,
               onSubmit();
             }
           }}
-          placeholder="313 Nguyễn Văn Linh, P. An Khánh, Q. Ninh Kiều, TP Cần Thơ"
+          placeholder={ADDRESS_SAMPLES[0].address}
           autoComplete="off"
           autoCapitalize="off"
           spellCheck={false}
@@ -121,21 +108,12 @@ export function AddressSamples({ showSteps, disabled, onPick }: {
   disabled: boolean;
   onPick: (address: string) => void;
 }) {
-  const samples = showSteps ? SAMPLES_TRINH_BAY : SAMPLES;
+  const samples = showSteps ? ADDRESS_SAMPLES.slice(0, 4) : ADDRESS_SAMPLES;
 
   return (
     <section className="samples" aria-labelledby="address-samples-title">
       <h2 id="address-samples-title" className="card-title">{showSteps ? 'Ví dụ chạy từng bước' : 'Thử với địa chỉ mẫu'}</h2>
-      <ul className="sample-list">
-        {samples.map(({ label, value }) => (
-          <li key={label}>
-            <button type="button" className="sample-btn" disabled={disabled} onClick={() => onPick(value)}>
-              <span className="sample-label">{label}</span>
-              <span className="sample-value">{value}</span>
-            </button>
-          </li>
-        ))}
-      </ul>
+      <AddressSampleList samples={samples} disabled={disabled} onPick={onPick} />
     </section>
   );
 }

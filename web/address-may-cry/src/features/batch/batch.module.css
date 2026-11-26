@@ -168,6 +168,15 @@
   flex-wrap: wrap;
 }
 
+.sampleDetails > summary {
+  min-height: 44px;
+  padding-block: 12px;
+  color: var(--b-text);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+}
+
 .chipBtn {
   font-size: 13px;
   font-weight: 500;

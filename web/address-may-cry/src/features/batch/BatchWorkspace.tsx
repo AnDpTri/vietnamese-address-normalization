@@ -3,7 +3,9 @@ import type { BatchInput, BatchItem } from '../../shared/contracts';
 import { normalizeBatch } from '../../shared/api';
 import { parseCSV, parsePastedLines, CSV_LIMITS } from './csvParser';
 import { exportToCSV, exportToJSON, type BatchItemWithMeta } from './exportUtils';
-import { SAMPLE_ADDRESSES, getSampleCsvContent } from './sampleData';
+import { getSampleCsvContent } from './sampleData';
+import { ADDRESS_SAMPLES } from '../../shared/addressSamples';
+import { AddressSampleList } from '../../components/AddressSampleList';
 import { ResultDetails } from '../../components/ResultDetails';
 import { describeWarning } from '../../lib/warnings';
 import { StatusBadge } from '../../components/StatusBadge';
@@ -94,7 +96,7 @@ export default function BatchWorkspace({ onInspect }: BatchWorkspaceProps) {
   };
 
   const handleLoadAllSamples = () => {
-    const all = SAMPLE_ADDRESSES.map(s => s.address).join('\n');
+    const all = ADDRESS_SAMPLES.map(s => s.address).join('\n');
     setPastedText(all);
     setErrorMessage(null);
   };
@@ -434,7 +436,7 @@ export default function BatchWorkspace({ onInspect }: BatchWorkspaceProps) {
           <div className={styles.textareaWrapper}>
             <textarea
               className={styles.addressTextarea}
-              placeholder="Dán mỗi dòng một địa chỉ cần chuẩn hóa (tối đa 1.000 dòng, mỗi dòng tối đa 2.048 ký tự)…&#10;Ví dụ:&#10;268/10 NGUYỄN VĂN LINH, PHƯỜNG XUÂN KHÁNH, CẦN THƠ&#10;45 XÔ VIẾT NGHỆ TĨNH, P.AN CƯ, NINH KIỀU, CẦN THƠ"
+              placeholder={`Dán mỗi dòng một địa chỉ cần chuẩn hóa\n${ADDRESS_SAMPLES[0].address}\n${ADDRESS_SAMPLES[1].address}`}
               value={pastedText}
               onChange={e => setPastedText(e.target.value)}
               disabled={isProcessing}
@@ -447,18 +449,8 @@ export default function BatchWorkspace({ onInspect }: BatchWorkspaceProps) {
                 {CSV_LIMITS.MAX_ROWS.toLocaleString('vi-VN')} dòng
               </span>
               <div className={styles.sampleChips}>
-                <span>Mẫu thử nhanh:</span>
-                <button type="button" className={styles.chipBtn} onClick={() => handleLoadSample(SAMPLE_ADDRESSES[0].address)}>
-                  Cần Thơ (Sáp nhập)
-                </button>
-                <button type="button" className={styles.chipBtn} onClick={() => handleLoadSample(SAMPLE_ADDRESSES[1].address)}>
-                  Xô Viết Nghệ Tĩnh
-                </button>
-                <button type="button" className={styles.chipBtn} onClick={() => handleLoadSample(SAMPLE_ADDRESSES[2].address)}>
-                  Dịch Vọng (Chia tách)
-                </button>
-                <button type="button" className={styles.chipBtn} onClick={handleLoadAllSamples}>
-                  Nạp tất cả 8 mẫu
+                <button type="button" className={styles.chipBtn} onClick={handleLoadAllSamples} disabled={isProcessing}>
+                  Nạp tất cả {ADDRESS_SAMPLES.length} mẫu
                 </button>
                 {pastedText && (
                   <button type="button" className={styles.chipBtn} onClick={() => setPastedText('')}>
@@ -467,6 +459,10 @@ export default function BatchWorkspace({ onInspect }: BatchWorkspaceProps) {
                 )}
               </div>
             </div>
+            <details className={styles.sampleDetails}>
+              <summary>Đối chiếu địa chỉ mẫu</summary>
+              <AddressSampleList samples={ADDRESS_SAMPLES} disabled={isProcessing} onPick={handleLoadSample} action="Thêm" />
+            </details>
           </div>
         ) : (
           <div className={styles.stackCol}>

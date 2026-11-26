@@ -3,6 +3,7 @@ import type { NormalizeResponse } from '../../shared/contracts';
 import { normalizeAddress } from '../../shared/api';
 import { IconAlertTriangle } from '../../components/Icons';
 import { AddressSamples, InputPanel, MAX_CHARS } from './InputPanel';
+import { ADDRESS_SAMPLES } from '../../shared/addressSamples';
 import { ResultDetails } from '../../components/ResultDetails';
 import { PipelineView } from './PipelineView';
 import { StepsView } from './StepsView';
@@ -148,15 +149,15 @@ export const SingleWorkspace: React.FC = () => {
                 <p>Địa chỉ chuẩn và cảnh báo sẽ hiển thị ở đây.</p>
               </div>
               <div className="address-preview">
-                <h3>Ví dụ đối chiếu</h3>
+                <h3>{ADDRESS_SAMPLES[0].label}</h3>
                 <dl>
                   <div>
-                    <dt>Địa chỉ gốc</dt>
-                    <dd>Thôn 4, Xã Hoằng Lộc, Huyện Hoằng Hóa, Tỉnh Thanh Hóa</dd>
+                    <dt>Bản gõ mẫu</dt>
+                    <dd>{ADDRESS_SAMPLES[0].address}</dd>
                   </div>
                   <div>
-                    <dt>Địa chỉ sau chuyển đổi</dt>
-                    <dd>Thôn 4, Xã Hoằng Lộc, Tỉnh Thanh Hóa</dd>
+                    <dt>Địa chỉ đã xác minh</dt>
+                    <dd>{ADDRESS_SAMPLES[0].reference}</dd>
                   </div>
                 </dl>
               </div>
