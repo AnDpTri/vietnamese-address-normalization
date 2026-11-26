@@ -12,7 +12,7 @@ export const ADDRESS_SAMPLES: readonly AddressSample[] = [
     label: 'Trung tâm Hành chính Đà Nẵng',
     address: '24 tran phu, p. thach thang, q. hai chau, da nang',
     reference: 'Số 24, Đường Trần Phú, Phường Hải Châu, Thành phố Đà Nẵng',
-    source: 'https://cttdt.danangportal.gov.vn/vi/web/dng/w/chi-dao-dieu-hanh-noi-bat-cua-ubnd-thanh-pho-chu-tich-ubnd-thanh-pho-ngay-22-9',
+    source: 'https://danang.gov.vn/vi/web/dng/w/so-nong-nghiep-va-phat-trien-nong-thon-i',
   },
   {
     id: 'hai-phong',
@@ -26,7 +26,7 @@ export const ADDRESS_SAMPLES: readonly AddressSample[] = [
     label: 'Nhà Văn hóa Thanh niên TP.HCM',
     address: '04 Pham Ngoc Thach, P.Ben Nghe, Q.1, TP.HCM',
     reference: 'Số 04, Đường Phạm Ngọc Thạch, Phường Sài Gòn, Thành phố Hồ Chí Minh',
-    source: 'https://hdnd.hochiminhcity.gov.vn/filemanager/userfiles/schedules/lich-tuan-02-nam-2026.pdf',
+    source: 'https://hdnd.hochiminhcity.gov.vn/filemanager/userfiles/schedules/lich-tuan-02-nam-2026.pdf#page=5',
   },
   {
     id: 'hoan-kiem',
@@ -47,20 +47,20 @@ export const ADDRESS_SAMPLES: readonly AddressSample[] = [
     label: 'Văn phòng UBND TP.HCM',
     address: '86 le thanh ton - p.ben nghe - q1 - tphcm',
     reference: 'Số 86, Đường Lê Thánh Tôn, Phường Sài Gòn, Thành phố Hồ Chí Minh',
-    source: 'https://congbao.hochiminhcity.gov.vn/DKC.MFiles.CB/Gazette/DownLoadFileResult/49000',
+    source: 'https://svhtt.hochiminhcity.gov.vn/web/guest/tin-chi-tiet/-/chi-tiet/tiep-nhan-phan-anh-kien-nghi-ve-quy-%C4%91inh-hanh-chinh-25449-2512.html',
   },
   {
     id: 'giang-vo',
     label: 'UBND phường Giảng Võ',
     address: '525 kim ma, p ngoc khanh, q ba dinh, ha noi',
     reference: 'Số 525, Phố Kim Mã, Phường Giảng Võ, Thành phố Hà Nội',
-    source: 'https://xdcs.cdnchinhphu.vn/446259493575335936/2025/6/26/danh-sach-126-xa-17509016620211864713480.pdf',
+    source: 'https://xdcs.cdnchinhphu.vn/446259493575335936/2025/6/26/danh-sach-126-xa-17509016620211864713480.pdf#page=3',
   },
   {
     id: 'ha-long',
     label: 'Ban Quản lý Vịnh Hạ Long',
     address: '166 le thanh tong, p hong gai, quang ninh',
     reference: 'Số 166, Đường Lê Thánh Tông, Phường Hồng Gai, Tỉnh Quảng Ninh',
-    source: 'https://uongbi.gov.vn/ckfinder/userfiles/files/Ph%E1%BB%A5%20l%E1%BB%A5c%20kem%20Q%C4%90%202040%20ma%20dinh%20danh.pdf',
+    source: 'https://uongbi.gov.vn/ckfinder/userfiles/files/Ph%E1%BB%A5%20l%E1%BB%A5c%20kem%20Q%C4%90%202040%20ma%20dinh%20danh.pdf#page=2',
   }
 ];
